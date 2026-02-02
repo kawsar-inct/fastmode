@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Master | Real Internet Speed & DNS Test</title>
+    <meta name="description" content="Test your actual internet download and upload speed using real-time network requests and compare DNS performance.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://pl28548554.effectivegatecpm.com/cb/96/99/cb9699f629a04b189049f1ead9c58bfb.js"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --bg-dark: #0f172a;
+        }
+        body { 
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .speed-gauge {
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        .ad-placeholder {
+            background: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin: 20px 0;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+
+    <!-- Header / Navigation -->
+    <nav class="border-b border-slate-800 p-4 sticky top-0 bg-slate-900/80 backdrop-blur-md z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-bolt text-blue-500"></i>
+                <span>Net<span class="text-blue-500">Master</span></span>
+            </h1>
+            <div class="hidden md:flex gap-6 text-sm font-medium">
+                <a href="#speed" class="hover:text-blue-400 transition">Speed Test</a>
+                <a href="#dns" class="hover:text-blue-400 transition">DNS Benchmark</a>
+                <a href="#tools" class="hover:text-blue-400 transition">Optimization Tools</a>
+                <a href="#blog" class="hover:text-blue-400 transition">Guides</a>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
+
+        <!-- TOP AD PLACEMENT (Effective Gate CPM) -->
+        <div class="max-w-4xl mx-auto px-4 mt-2" id="container-b0f874a7300fec826f8e660e95869dda">
+            <div class="ad-placeholder h-14 w-full rounded-lg">Advertisement - Top Leaderboard</div>
+        </div>
+        
+        <!-- SECTION 1: INTERNET SPEED TEST -->
+        <section id="speed" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-extrabold mb-2">Real Internet Speed Test</h2>
+                <p class="text-slate-400">Accurate download, upload, and latency measurement.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Gauge Card -->
+                <div class="lg:col-span-2 glass-card p-8 rounded-2xl relative overflow-hidden flex flex-col items-center">
+                    <div id="test-status" class="mb-4 text-sm font-mono text-blue-400 h-6">Ready to test</div>
+                    
+                    <div class="relative w-64 h-64 mb-6">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-700" />
+                            <circle id="gauge-progress" cx="50" cy="50" r="45" stroke="url(#gradient)" stroke-width="8" fill="transparent"
+                            stroke-dasharray="283" stroke-dashoffset="283" class="speed-gauge" stroke-linecap="round" />
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#10b981" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="current-speed" class="text-5xl font-black">0.0</span>
+                            <span id="speed-unit" class="text-slate-400 text-sm uppercase">Mbps</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Ping</div>
+                            <div id="ping-val" class="text-xl font-bold text-blue-400">- ms</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Jitter</div>
+                            <div id="jitter-val" class="text-xl font-bold text-amber-400">- ms</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Download</div>
+                            <div id="down-val" class="text-xl font-bold text-emerald-400">-</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Upload</div>
+                            <div id="up-val" class="text-xl font-bold text-purple-400">-</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col items-center w-full">
+                        <button id="start-btn" onclick="startRealTest()" class="bg-blue-600 hover:bg-blue-500 text-white px-16 py-4 rounded-full font-bold text-lg transition shadow-lg shadow-blue-900/40 active:scale-95">
+                            GO
+                        </button>
+                        <p class="text-[10px] text-slate-500 mt-4 max-w-sm text-center">
+                            Test transfers approx. 15-30MB total to calculate throughput.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Side Ad -->
+                <div class="glass-card p-6 rounded-2xl border border-slate-700 sticky top-24 text-center">
+                    <img src="nordbanner.png"
+                    alt="NordVPN - Secure Your Internet"
+                    class="w-full rounded-lg mb-4">
+                    <h3 class="text-lg font-bold mb-3">Secure Your Connection</h3>
+                    <p class="text-xs text-slate-400 mb-4">
+                        Hide your IP, encrypt traffic & avoid ISP throttling.
+                    </p>
+                    <a href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=139463&url_id=902"
+                    target="_blank"
+                    rel="nofollow sponsored"
+                    class="relative inline-block rounded-xl p-[2px] font-bold text-white text-center
+                    bg-gradient-to-r from-blue-500 via-cyan-400 to-green-400
+                    animate-gradient-border">
+
+                    <span class="block bg-black rounded-xl px-6 py-3 z-10">
+                        🔒 Get NordVPN
+                    </span>
+
+                </a>
+
+                <style>
+                    @keyframes gradient-border {
+                      0% { background-position: 0% 50%; }
+                      50% { background-position: 100% 50%; }
+                      100% { background-position: 0% 50%; }
+                  }
+
+                  .animate-gradient-border {
+                      background-size: 200% 200%;
+                      animation: gradient-border 3s linear infinite;
+                  }
+              </style>
+
+          </div>
+      </div>
+  </section>
+
+  <!-- SECTION 2: DNS SPEED TEST -->
+  <section id="dns" class="mb-12">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold">Real DNS Benchmark</h2>
+            <p class="text-slate-400">Actual resolution times using DNS-over-HTTPS (DoH) API calls.</p>
+        </div>
+        <button onclick="runDNSTest()" id="dns-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-6 py-2 rounded-lg transition">
+            <i class="fas fa-sync-alt mr-2"></i> Run DNS Test
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="dns-results">
+        <!-- Placeholder cards for initial state -->
+        <div class="glass-card p-6 rounded-xl border-l-4 border-blue-500 opacity-50">
+            <h3 class="font-bold text-slate-500">Google DNS</h3>
+            <p class="text-xs text-slate-500">8.8.8.8</p>
+            <div class="mt-4 text-2xl font-mono text-slate-600">-- ms</div>
+        </div>
+        <div class="glass-card p-6 rounded-xl border-l-4 border-emerald-500 opacity-50">
+            <h3 class="font-bold text-slate-500">Cloudflare</h3>
+            <p class="text-xs text-slate-500">1.1.1.1</p>
+            <div class="mt-4 text-2xl font-mono text-slate-600">-- ms</div>
+        </div>
+        <div class="glass-card p-6 rounded-xl border-l-4 border-purple-500 opacity-50">
+            <h3 class="font-bold text-slate-500">Quad9</h3>
+            <p class="text-xs text-slate-500">9.9.9.9</p>
+            <div class="mt-4 text-2xl font-mono text-slate-600">-- ms</div>
+        </div>
+        <div class="glass-card p-6 rounded-xl border-l-4 border-amber-500 opacity-50">
+            <h3 class="font-bold text-slate-500">OpenDNS</h3>
+            <p class="text-xs text-slate-500">208.67.222.222</p>
+            <div class="mt-4 text-2xl font-mono text-slate-600">-- ms</div>
+        </div>
+    </div>
+</section>
+<!-- VPN Recommendation -->
+<section class="mb-12">
+    <div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold mb-2">
+                Improve Privacy & DNS Security
+            </h3>
+            <p class="text-slate-400 text-sm">
+                A VPN encrypts DNS requests and prevents ISP tracking or manipulation.
+            </p>
+        </div>
+        <a href="YOUR_NORDVPN_AFFILIATE_LINK"
+        target="_blank"
+        rel="nofollow sponsored"
+        class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition whitespace-nowrap">
+        🛡 Try NordVPN
+    </a>
+</div>
+</section>
+
+
+<!-- SECTION 3: WIFI OPTIMIZATION TOOLS -->
+<section id="tools" class="mb-12">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold">Wi-Fi Optimization Toolkit</h2>
+        <p class="text-slate-400">Essential software to diagnose, analyze, and boost your wireless signal.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- NetSpot -->
+        <div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 text-xl">
+                        <i class="fas fa-map"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">NetSpot</h3>
+                </div>
+                <p class="text-slate-400 text-sm mb-6">
+                    Professional Wi-Fi site surveys, analysis, and troubleshooting. Create heatmaps to find dead zones and interference.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">Windows</span>
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">macOS</span>
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">Android</span>
+                </div>
+            </div>
+            <a href="https://www.netspotapp.com/download.html" target="_blank" class="block text-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">
+                <i class="fas fa-download mr-2"></i> Download NetSpot
+            </a>
+        </div>
+
+        <!-- WiFi Analyzer -->
+        <div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 text-xl">
+                        <i class="fas fa-chart-area"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">WiFi Analyzer</h3>
+                </div>
+                <p class="text-slate-400 text-sm mb-6">
+                    Identifies the best channel for your router by visualizing surrounding networks. Perfect for reducing channel overlap.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">Windows 10/11</span>
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">Android</span>
+                </div>
+            </div>
+            <a href="https://apps.microsoft.com/store/detail/wifi-analyzer/9NBLGGH33N0N" target="_blank" class="block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition">
+                <i class="fas fa-download mr-2"></i> Get WiFi Analyzer
+            </a>
+        </div>
+
+        <!-- Acrylic Wi-Fi -->
+        <div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 text-xl">
+                        <i class="fas fa-search-location"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">Acrylic Wi-Fi</h3>
+                </div>
+                <p class="text-slate-400 text-sm mb-6">
+                    Advanced Wi-Fi scanner that displays information about 802.11ax/ac networks and security configurations.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px] text-slate-400 uppercase">Windows</span>
+                </div>
+            </div>
+            <a href="https://www.acrylicwifi.com/en/downloads-free-license-wifi-wireless-network-software-tools/download-wifi-scanner-windows/" target="_blank" class="block text-center bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition">
+                <i class="fas fa-download mr-2"></i> Download Acrylic
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- VPN Recommendation -->
+<section class="mb-12">
+    <div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold mb-2">
+                Improve Privacy & DNS Security
+            </h3>
+            <p class="text-slate-400 text-sm">
+                A VPN encrypts DNS requests and prevents ISP tracking or manipulation.
+            </p>
+        </div>
+        <a href="YOUR_NORDVPN_AFFILIATE_LINK"
+        target="_blank"
+        rel="nofollow sponsored"
+        class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition whitespace-nowrap">
+        🛡 Try NordVPN
+    </a>
+</div>
+</section>
+
+<!-- SECTION 4: SEO CONTENT -->
+<section id="blog" class="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-slate-800 pt-12">
+    <div class="md:col-span-2 space-y-8 text-slate-300 leading-relaxed">
+        <article>
+            <h3 class="text-2xl font-bold mb-4 gradient-text text-white">Understanding Download vs. Upload Speed</h3>
+            <p class="mb-4">
+                <b>Download speed</b> refers to how fast your connection can pull data from the internet (watching Netflix, downloading files). <b>Upload speed</b> is the opposite: it's how fast you can send data out (posting to social media, sending emails, or video calling).
+            </p>
+            <p>
+                Most home connections are <i>asymmetric</i>, meaning download speeds are significantly higher than upload speeds. This is designed for typical consumers who consume more data than they create.
+            </p>
+        </article>
+
+        <article>
+            <h3 class="text-2xl font-bold mb-4 gradient-text text-white">How Our Upload Test Works</h3>
+            <p>
+                Our tool generates a randomized 5MB data blob in your browser's memory and pushes it to a high-speed endpoint. By timing how long the server takes to receive the final byte, we calculate your real-world upload capacity. This is critical for streamers and remote workers using Zoom or Microsoft Teams.
+            </p>
+        </article>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-slate-800/30 p-6 rounded-2xl h-fit border border-slate-700/50">
+            <h4 class="font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-400"></i> Tech Specs
+            </h4>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <span class="text-blue-400 font-bold block">Latency (Ping)</span>
+                    <span class="text-slate-400">The delay in milliseconds for data to reach its destination.</span>
+                </div>
+                <div>
+                    <span class="text-purple-400 font-bold block">Upload Goal</span>
+                    <span class="text-slate-400">Min. 5-10 Mbps is recommended for stable HD video calls.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- <button id="redirectBtn" 
+        class="bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:opacity-90 transition-all">
+    Click to Continue
+</button>
+
+<script>
+const btn = document.getElementById("redirectBtn");
+let timeLeft = 10;
+
+btn.addEventListener("click", () => {
+    btn.disabled = true; // prevent multiple clicks
+    btn.classList.add("opacity-70", "cursor-not-allowed");
+    btn.textContent = `Redirecting in ${timeLeft}s`;
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        btn.textContent = `Redirecting in ${timeLeft}s`;
+
+        if (timeLeft === 0) {
+            clearInterval(countdown);
+            window.location.href = "download.html"; // 🔁 Change this to your target
+        }
+    }, 1000);
+});
+</script> -->
+
+</main>
+
+<footer class="bg-slate-950 p-8 mt-12 text-center text-slate-500 text-sm">
+    <p>&copy; 2026 NetMaster Pro. Professional Grade Benchmarking.</p>
+</footer>
+
+<script>
+    const DOWNLOAD_URL = "https://cachefly.cachefly.net/10mb.test"; 
+    const UPLOAD_URL = "https://httpbin.org/post"; 
+
+    let isTesting = false;
+
+    async function startRealTest() {
+        if (isTesting) return;
+        isTesting = true;
+
+        const btn = document.getElementById('start-btn');
+        const status = document.getElementById('test-status');
+        const speedText = document.getElementById('current-speed');
+        const pingVal = document.getElementById('ping-val');
+        const jitterVal = document.getElementById('jitter-val');
+        const downVal = document.getElementById('down-val');
+        const upVal = document.getElementById('up-val');
+
+        btn.innerText = "TESTING...";
+        btn.disabled = true;
+        resetUI();
+
+        try {
+                // 1. PING & JITTER
+            status.innerText = "Measuring Latency...";
+            const latencies = [];
+            for(let i=0; i < 5; i++) {
+                const lat = await measureLatency();
+                latencies.push(lat);
+                pingVal.innerText = Math.round(lat) + " ms";
+                await sleep(100);
+            }
+            const avgPing = latencies.reduce((a,b) => a+b) / latencies.length;
+            const jitter = Math.max(...latencies) - Math.min(...latencies);
+            pingVal.innerText = Math.round(avgPing) + " ms";
+            jitterVal.innerText = Math.round(jitter) + " ms";
+
+                // 2. DOWNLOAD TEST
+            status.innerText = "Testing Download Speed...";
+            const downStartTime = performance.now();
+            const response = await fetch(DOWNLOAD_URL + "?cb=" + Date.now());
+            if (!response.ok) throw new Error("Download failed");
+
+            const reader = response.body.getReader();
+            let loadedDown = 0;
+                const totalDown = 10485760; // 10MB
+
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    loadedDown += value.length;
+                    const mbps = (loadedDown * 8) / ((performance.now() - downStartTime) / 1000) / 1000000;
+                    speedText.innerText = mbps.toFixed(1);
+                    updateGauge(mbps, 200);
+                }
+                downVal.innerText = speedText.innerText + " Mbps";
+
+                // 3. UPLOAD TEST
+                status.innerText = "Testing Upload Speed...";
+                updateGauge(0, 200);
+                await sleep(500);
+
+                const size = 4 * 1024 * 1024;
+                const uploadData = new Uint8Array(size);
+                for(let i=0; i<size; i++) uploadData[i] = Math.random() * 255;
+
+                    const upStartTime = performance.now();
+                const upResponse = await fetch(UPLOAD_URL, {
+                    method: 'POST',
+                    body: uploadData,
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/octet-stream' }
+                });
+
+                if (!upResponse.ok) throw new Error("Upload test endpoint error");
+                
+                const upDuration = (performance.now() - upStartTime) / 1000;
+                const upMbps = (uploadData.length * 8) / upDuration / 1000000;
+                
+                speedText.innerText = upMbps.toFixed(1);
+                updateGauge(upMbps, 100); 
+                upVal.innerText = upMbps.toFixed(1) + " Mbps";
+
+                status.innerText = "Test Complete";
+
+            } catch (error) {
+                console.error("Test Error:", error);
+                status.innerText = "Error during test";
+                status.classList.add('text-red-500');
+            } finally {
+                btn.innerText = "RETEST";
+                btn.disabled = false;
+                isTesting = false;
+            }
+        }
+
+        async function measureLatency() {
+            const start = performance.now();
+            try {
+                // Using 1.1.1.1 which has excellent uptime and CORS headers
+                await fetch("https://1.1.1.1/dns-query?name=google.com", { mode: 'no-cors', cache: 'no-store' });
+                return performance.now() - start;
+            } catch(e) {
+                return performance.now() - start;
+            }
+        }
+
+        function updateGauge(val, max) {
+            const gauge = document.getElementById('gauge-progress');
+            const percent = Math.min((val / max) * 100, 100);
+            const offset = 283 - (283 * percent) / 100;
+            gauge.style.strokeDashoffset = offset;
+        }
+
+        function resetUI() {
+            document.getElementById('current-speed').innerText = "0.0";
+            document.getElementById('ping-val').innerText = "- ms";
+            document.getElementById('jitter-val').innerText = "- ms";
+            document.getElementById('down-val').innerText = "-";
+            document.getElementById('up-val').innerText = "-";
+            updateGauge(0, 100);
+            document.getElementById('test-status').classList.remove('text-red-500');
+        }
+
+        /**
+         * DNS BENCHMARK - IMPROVED RELIABILITY
+         * Fixed CORS issues by using verified DoH endpoints and fallback ping logic
+         */
+        const dnsProviders = [
+            { name: "Cloudflare", url: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1", color: "emerald" },
+            { name: "Google", url: "https://dns.google/dns-query", ip: "8.8.8.8", color: "blue" },
+            { name: "Quad9", url: "https://dns.quad9.net/dns-query", ip: "9.9.9.9", color: "purple" },
+            { name: "OpenDNS", url: "https://doh.opendns.com/dns-query", ip: "208.67.222.222", color: "amber" },
+            { name: "AdGuard", url: "https://dns.adguard-dns.com/dns-query", ip: "Security", color: "cyan" },
+            { name: "CleanBrowsing", url: "https://doh.cleanbrowsing.org/doh/family-filter/", ip: "185.228.168.168", color: "indigo" },
+            { name: "AliDNS", url: "https://dns.alicdn.com/dns-query", ip: "223.5.5.5", color: "rose" },
+            { name: "Comodo", url: "https://doh.securly.com/dns-query", ip: "8.26.56.26", color: "orange" }
+        ];
+
+        async function runDNSTest() {
+            const container = document.getElementById('dns-results');
+            const btn = document.getElementById('dns-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Benchmarking...`;
+            container.innerHTML = ""; 
+
+            // Create cards
+            dnsProviders.forEach(provider => {
+                const cardId = `dns-${provider.name.replace(/\s+/g, '')}`;
+                const card = document.createElement('div');
+                card.id = cardId;
+                card.className = `glass-card p-6 rounded-xl border-l-4 border-${provider.color}-500 transition-all duration-300`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold">${provider.name}</h3>
+                            <p class="text-xs text-slate-400">${provider.ip}</p>
+                        </div>
+                        <i class="fas fa-circle-notch fa-spin text-xs text-slate-600"></i>
+                    </div>
+                    <div class="mt-4 text-2xl font-mono text-slate-500">...</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Run individual tests in parallel with a slight stagger for UI effect
+            await Promise.all(dnsProviders.map(async (provider, index) => {
+                await sleep(index * 100);
+                const card = document.getElementById(`dns-${provider.name.replace(/\s+/g, '')}`);
+                const speedDiv = card.querySelector('.mt-4');
+                const icon = card.querySelector('i');
+                
+                try {
+                    const startTime = performance.now();
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout
+
+                    // Standard DoH Fetch
+                    const res = await fetch(`${provider.url}?name=google.com&type=A`, { 
+                        method: 'GET', 
+                        headers: { 'accept': 'application/dns-json' },
+                        mode: 'cors',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+
+                    // If JSON fails but response exists, or if CORS blocks but request completes
+                    if(!res.ok && res.type !== 'opaque') throw new Error();
+                    
+                    const duration = Math.round(performance.now() - startTime);
+                    speedDiv.innerText = `${duration} ms`;
+                    speedDiv.className = `mt-4 text-2xl font-mono text-${provider.color}-400`;
+                    icon.className = "fas fa-check-circle text-xs text-emerald-500";
+                    
+                } catch (e) {
+                    // FALLBACK: Opaque Ping (Useful for servers with strict CORS)
+                    try {
+                        const fallStartTime = performance.now();
+                        await fetch(provider.url, { mode: 'no-cors', cache: 'no-store' });
+                        const duration = Math.round(performance.now() - fallStartTime);
+                        speedDiv.innerText = `${duration} ms*`;
+                        speedDiv.className = `mt-4 text-2xl font-mono text-blue-400`;
+                        icon.className = "fas fa-info-circle text-xs text-blue-400";
+                        card.title = "Response measured via connection handshake (CORS restricted)";
+                    } catch (err) {
+                        speedDiv.innerText = `Timeout`;
+                        speedDiv.className = `mt-4 text-2xl font-mono text-rose-500`;
+                        icon.className = "fas fa-times-circle text-xs text-rose-500";
+                    }
+                }
+            }));
+            
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-sync-alt mr-2"></i> Run DNS Test`;
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    </script>
+    <script async="async" data-cfasync="false" src="https://pl28532307.effectivegatecpm.com/b0f874a7300fec826f8e660e95869dda/invoke.js"></script>
+    <script src="https://pl28548656.effectivegatecpm.com/88/51/29/88512961d261fde9870996c3a27cb4ad.js"></script>
+</body>
+
+</html>
+
+
+
+
+
