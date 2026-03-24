@@ -527,50 +527,150 @@
         const DOWNLOAD_URL = "https://cachefly.cachefly.net/10mb.test"; 
         const UPLOAD_URL = "https://httpbin.org/post"; 
 
-        // 1. IP DETECTION LOGIC
-        async function fetchIPInfo() {
-            try {
-                // Using ipwho.is (Free, no-key, HTTPS supported)
-                const res = await fetch('https://ipwho.is/');
-                const data = await res.json();
+        // // 1. IP DETECTION LOGIC
+        // async function fetchIPInfo() {
+        //     try {
+        //         // Using ipwho.is (Free, no-key, HTTPS supported)
+        //         const res = await fetch('https://ipwho.is/');
+        //         const data = await res.json();
                 
-                if(data.success) {
-                    document.getElementById('user-ip').innerText = data.ip;
-                    document.getElementById('user-isp').innerText = data.connection.isp || "Unknown ISP";
-                    document.getElementById('user-location').innerText = `${data.city}, ${data.country_code}`;
-                } else {
-                    throw new Error("IP Service Error");
-                }
-            } catch(e) {
-                console.log('IP Fetch failed', e);
-                document.getElementById('user-ip').innerText = "Unavailable";
-            }
-        }
+        //         if(data.success) {
+        //             document.getElementById('user-ip').innerText = data.ip;
+        //             document.getElementById('user-isp').innerText = data.connection.isp || "Unknown ISP";
+        //             document.getElementById('user-location').innerText = `${data.city}, ${data.country_code}`;
+        //         } else {
+        //             throw new Error("IP Service Error");
+        //         }
+        //     } catch(e) {
+        //         console.log('IP Fetch failed', e);
+        //         document.getElementById('user-ip').innerText = "Unavailable";
+        //     }
+        // }
         
-        // Fetch IP on load
-        fetchIPInfo();
+        // // Fetch IP on load
+        // fetchIPInfo();
 
-        function copyIP() {
-            const ip = document.getElementById('user-ip').innerText;
-            if(ip && ip !== "Detecting..." && ip !== "Unavailable") {
-                navigator.clipboard.writeText(ip);
-                alert("IP Copied to clipboard!");
-            }
-        }
+        // function copyIP() {
+        //     const ip = document.getElementById('user-ip').innerText;
+        //     if(ip && ip !== "Detecting..." && ip !== "Unavailable") {
+        //         navigator.clipboard.writeText(ip);
+        //         alert("IP Copied to clipboard!");
+        //     }
+        // }
         
-        function copyText(text, btnId) {
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById(btnId);
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check text-emerald-400"></i>';
-                btn.classList.add('scale-110');
+        // function copyText(text, btnId) {
+        //     navigator.clipboard.writeText(text).then(() => {
+        //         const btn = document.getElementById(btnId);
+        //         const originalHtml = btn.innerHTML;
+        //         btn.innerHTML = '<i class="fas fa-check text-emerald-400"></i>';
+        //         btn.classList.add('scale-110');
                 
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="far fa-copy"></i>';
-                    btn.classList.remove('scale-110');
-                }, 2000);
-            });
+        //         setTimeout(() => {
+        //             btn.innerHTML = '<i class="far fa-copy"></i>';
+        //             btn.classList.remove('scale-110');
+        //         }, 2000);
+        //     });
+        // }
+
+        // 1. IP DETECTION LOGIC (With Multi-API Fallback)
+async function fetchIPInfo() {
+    const ipElem = document.getElementById('user-ip');
+    const ispElem = document.getElementById('user-isp');
+    const locElem = document.getElementById('user-location');
+
+    // List of reliable free APIs to try in order
+    const apis = [
+        {
+            url: 'https://ipapi.co/json/',
+            parse: (data) => ({
+                ip: data.ip,
+                isp: data.org,
+                loc: `${data.city}, ${data.country_code}`
+            })
+        },
+        {
+            url: 'https://api.db-ip.com/v2/free/self',
+            parse: (data) => ({
+                ip: data.ipAddress,
+                isp: data.publisher || "Internet Provider",
+                loc: `${data.city}, ${data.countryCode}`
+            })
         }
+    ];
+
+    for (const api of apis) {
+        try {
+            const res = await fetch(api.url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
+            const data = await res.json();
+            const result = api.parse(data);
+
+            if (ipElem) ipElem.innerText = result.ip || "Unknown";
+            if (ispElem) ispElem.innerText = result.isp || "Unknown ISP";
+            if (locElem) locElem.innerText = result.loc || "Unknown Location";
+            
+            return; // Exit if successful
+        } catch (e) {
+            console.warn(`Provider ${api.url} failed, trying next...`, e);
+        }
+    }
+
+    // Final Fail State
+    if (ipElem) ipElem.innerText = "Fetch Error (403/Blocked)";
+}
+
+// 2. CLIPBOARD LOGIC
+async function copyIP() {
+    const ip = document.getElementById('user-ip').innerText;
+    const invalidStates = ["Detecting...", "Unavailable", "Fetch Error (403/Blocked)"];
+    
+    if (ip && !invalidStates.includes(ip)) {
+        await handleCopy(ip);
+        alert("IP Copied to clipboard!");
+    }
+}
+
+async function copyText(text, btnId) {
+    const success = await handleCopy(text);
+    if (success) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        btn.innerHTML = '<i class="fas fa-check text-emerald-400"></i>';
+        btn.classList.add('scale-110');
+        
+        setTimeout(() => {
+            btn.innerHTML = '<i class="far fa-copy"></i>';
+            btn.classList.remove('scale-110');
+        }, 2000);
+    }
+}
+
+// Helper to handle clipboard across different browser security levels
+async function handleCopy(text) {
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            // Fallback for non-HTTPS environments
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            return true;
+        }
+    } catch (err) {
+        console.error("Copy failed", err);
+        return false;
+    }
+}
+
+// Fetch IP when the page is ready
+document.addEventListener('DOMContentLoaded', fetchIPInfo);
 
         // 2. SPEED TEST LOGIC
         let isTesting = false;
