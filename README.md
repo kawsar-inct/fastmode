@@ -1,71 +1,122 @@
-# FastMode
+# Fast Mode – Free Internet Speed Test, DNS Benchmark & Network Diagnostics Tool
 
-FastMode is a modern, high-performance web platform focused on delivering professional-grade network benchmarking, utilities, and optimization resources. Built with client-side efficiency and privacy in mind, FastMode provides real-time internet speed diagnostics and secure DNS benchmarking with a fast-loading, highly responsive interface across all devices.
+Fast Mode is a free, modern, and lightweight **Internet Speed Test** and **DNS Benchmark** web application that helps users analyze their network performance directly from their browser. Built with **HTML5**, **CSS3**, and **Vanilla JavaScript**, it accurately measures **download speed**, **upload speed**, **ping (latency)**, **jitter**, and compares the performance of popular **DNS servers** using secure **DNS-over-HTTPS (DoH)** technology.
 
-🌐 Website: https://www.fastmode.top
+Unlike traditional speed test websites, Fast Mode runs entirely in the browser with a clean, responsive interface and requires no extensions or software installation.
 
-🚀 Features
-⚡ Real Internet Speed Test — Accurate download, upload, latency (ping), and jitter measurements using native HTML5 technology.
-🔒 Secure DNS Benchmark — Live resolution time comparison across major providers using secure DNS-over-HTTPS (DoH) API calls.
-🌐 Network Identity Dashboard — Instant tracking of public IP addresses, Internet Service Providers (ISP), and geographic location.
-🛠️ Wi-Fi Optimization Toolkit — Curated software directory for signal diagnostics, heatmaps, and channel analysis.
-📱 Fully responsive design across desktop, tablet, and mobile platforms.
-🎨 Modern UI/UX with a sleek, dark-themed, and intuitive interface.
-🔍 SEO-friendly structure optimized for high search engine visibility.
-📈 Regular updates, additions, and network tool improvements.
+🌐 **Live Website:** https://www.fastmode.top
 
-🌍 Live Demo
-Visit the live website:
-https://www.fastmode.top
+---
 
-📖 About FastMode
-FastMode is designed to provide reliable, zero-bloat web utilities for developers, network administrators, and everyday users. The primary focus is on connection transparency, speed, and privacy—allowing users to benchmark their throughput and evaluate DNS security securely inside their browser without heavy tracking or intrusive browser plugins.
+## 🚀 Features
 
-By generating clean, in-memory blobs for upload testing and parsing asynchronous DoH responses directly on the client side, FastMode showcases the power of vanilla web technologies. Whether you are troubleshooting Wi-Fi dead zones or testing asymmetric fiber speeds, FastMode is optimized for lightning-fast execution and smooth navigation.
+### ⚡ Internet Speed Test
 
-🛠 Technologies Used
-HTML5 (Semantic Layout & Data Blobs)
-CSS3 (Modern Flexbox/Grid & Responsive Foundations)
-JavaScript (ES6+ Vanilla Async/Fetch API)
-DNS-over-HTTPS (DoH) Client Endpoints
-Responsive Web Design
-SEO Best Practices & Schema Markup
+Measure your internet connection in real time with accurate performance metrics.
 
-🎯 Project Goals
-Build a lightning-fast, zero-dependency network utility suite.
-Deliver an exceptional, lightweight user experience.
-Provide precise client-side throughput and latency calculations.
-Follow secure modern web development standards.
-Maintain elite search engine optimization (SEO) rankings.
-Continuously expand the toolkit with new features and diagnostics.
+* Download Speed Test
+* Upload Speed Test
+* Ping (Latency) Test
+* Jitter Analysis
+* Real-time Progress Indicators
+* Mobile & Desktop Compatible
 
-📈 SEO
-This project is developed with technical search engine optimization heavily in mind.
-SEO highlights include:
+---
 
-Semantic HTML tags
-Responsive and mobile-friendly layout
-Optimized Core Web Vitals and page speeds
-Configured canonical URLs and sitemap architecture
-Meta title, description, and Open Graph protocol support
-Strict HTTPS security structure
-Clean, crawlable content flow
+### 🌍 DNS Benchmark Tool
 
-🤝 Contributing
-Contributions, suggestions, bug reports, and feature requests are always welcome.
-If you have ideas to optimize the benchmarking algorithms or expand the toolset, feel free to open an issue or submit a pull request.
+Compare the response times of leading public DNS providers to find the fastest DNS server for your internet connection.
 
-📜 License
+Supported DNS providers include:
+
+* Cloudflare DNS (1.1.1.1)
+* Google Public DNS (8.8.8.8)
+* Quad9 DNS
+* OpenDNS
+* AdGuard DNS
+* CleanBrowsing DNS
+* AliDNS
+* Comodo Secure DNS
+
+Measurements are performed using secure **DNS-over-HTTPS (DoH)** requests.
+
+---
+
+### 🌐 Network Information
+
+Automatically detect your current network information, including:
+
+* Public IP Address
+* Internet Service Provider (ISP)
+* Approximate Location
+* Connection Details
+
+---
+
+### 📚 Internet Learning Center
+
+Fast Mode also includes educational resources covering:
+
+* What is Internet Speed?
+* What is Ping?
+* What is Jitter?
+* DNS Explained
+* Mbps vs MB/s
+* How to Improve Wi-Fi Speed
+* Best DNS Servers for Gaming
+* Network Troubleshooting Tips
+
+---
+
+## ✨ Why Fast Mode?
+
+* Completely Free
+* No Registration Required
+* No Software Installation
+* Lightweight & Fast
+* Modern Responsive UI
+* Privacy Friendly
+* Cross-Platform
+* SEO Optimized
+* Mobile Friendly
+
+---
+
+## 🛠 Technology Stack
+
+* HTML5
+* CSS3
+* Vanilla JavaScript (ES6+)
+* Fetch API
+* DNS-over-HTTPS (DoH)
+* REST APIs
+
+---
+
+## 🔍 Keywords
+
+Internet Speed Test, Speed Test, Online Speed Test, WiFi Speed Test, Broadband Speed Test, Upload Speed Test, Download Speed Test, Ping Test, Latency Test, Jitter Test, DNS Benchmark, DNS Speed Test, DNS Checker, Public DNS, Cloudflare DNS, Google DNS, Network Diagnostics, Network Analyzer, Internet Performance Test, Network Speed Monitor, DNS-over-HTTPS, DoH, ISP Checker, IP Address Lookup, JavaScript Speed Test, HTML5 Speed Test, Web Speed Test, Fast Internet Test.
+
+---
+
+## 🌟 Live Demo
+
+Visit the live application:
+
+**https://www.fastmode.top**
+
+---
+
+## ⭐ Contributing
+
+Contributions, feature requests, and bug reports are welcome. Feel free to fork the project, open an issue, or submit a pull request.
+
+---
+
+## 📄 License
+
 This project is licensed under the MIT License.
 
-⭐ Support
-If you find this project useful:
+---
 
-⭐ Star this repository
-🍴 Fork the project
-📢 Share it with others
-
-Your support helps the project grow.
-
-Website: https://www.fastmode.top
-Made with ❤️ for the web development and networking community.
+If you find Fast Mode useful, please consider giving this repository a ⭐ on GitHub. Your support helps improve the project and makes it easier for others to discover.
