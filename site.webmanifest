@@ -1,0 +1,10 @@
+{
+  "name": "Fast Mode Internet Speed Test",
+  "short_name": "Fast Mode",
+  "description": "Browser-based internet speed test and network diagnostics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [{ "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }]
+}

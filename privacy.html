@@ -1,40 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
 <title>Privacy Policy | Fast Mode</title>
-<meta name="robots" content="index, follow">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
-<style>
-  body{margin:0;background:#0f172a;color:#cbd5e1;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.7}
-  main{max-width:720px;margin:0 auto;padding:2rem 1.25rem 4rem}
-  a{color:#60a5fa} h1{color:#fff} h2{color:#fff;margin-top:2rem;font-size:1.2rem}
-  nav{border-bottom:1px solid #1e293b;padding:1rem 1.25rem} nav a{color:#fff;font-weight:700;text-decoration:none;font-size:1.25rem} nav span{color:#3b82f6}
-</style>
+<meta name="description" content="See what data Fast Mode stores in your browser and which third-party services your browser contacts for speed, IP and DNS tests.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://fastmode.top/privacy.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fast Mode">
+<meta property="og:url" content="https://fastmode.top/privacy.html">
+<meta property="og:title" content="Privacy Policy | Fast Mode">
+<meta property="og:description" content="How Fast Mode handles local test history and browser requests to third-party network services.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="legal.css">
 </head>
 <body>
-<nav><a href="/">Fast<span>Mode</span></a></nav>
-<main>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav aria-label="Main navigation"><a href="/" aria-label="Fast Mode home">Fast<span>Mode</span></a></nav>
+<main id="main">
+<p class="eyebrow">Privacy</p>
 <h1>Privacy Policy</h1>
-<p>Last updated: October 2026. This page describes what Fast Mode does with data. Please review it and adapt it to your situation and local law.</p>
-<h2>What we collect</h2>
-<p>Fast Mode does not require an account and does not store your test results on our servers. Results are shown in your browser only. If you use the Test History feature, your last 25 results and your unit preference are saved in your browser&rsquo;s local storage on your device; you can clear them any time.</p>
-<h2>Third-party services your browser contacts</h2>
+<p class="lede">Last updated: October 24, 2026. This page explains the data flows in the current Fast Mode website.</p>
+<h2>Information saved on your device</h2>
+<p>Fast Mode does not require an account. Test history (up to 25 results), the speed unit preference and the theme preference are stored in this browser’s local storage. They are not sent to a Fast Mode account or results database. Use the Clear button in Test History to remove saved results, or clear this site’s browser storage to remove all preferences.</p>
+<h2>Third-party services used by the tools</h2>
 <ul>
-<li><b>Speed test:</b> your browser exchanges test data with Cloudflare&rsquo;s speed-test servers (and CacheFly as a download fallback). These providers can see your IP address as part of normal web requests.</li>
-<li><b>IP, ISP and location display:</b> your browser asks third-party lookup services (ipapi.co, ipwho.is, db-ip.com, ipify.org) for your public IP and approximate location. Lookups are tried in order until one succeeds.</li>
-<li><b>DNS benchmark:</b> your browser sends test DNS-over-HTTPS queries for example.com to the public DNS providers listed on the page.</li>
-<li><b>Page assets:</b> Tailwind CSS and Font Awesome are loaded from public CDNs.</li>
+<li><b>Speed test:</b> the browser exchanges test traffic with Cloudflare speed-test endpoints and may use CacheFly as a download fallback. Upload tests send generated test data to the configured upload endpoint.</li>
+<li><b>IP and connection details:</b> the page requests your public IP and approximate ISP/location from ipapi.co, ipwho.is, db-ip.com and ipify.org, trying providers in sequence until it has enough information.</li>
+<li><b>DNS benchmark:</b> when you run it, the browser sends DNS-over-HTTPS queries to the public resolver providers shown on the page. Queries use example.com and generated test names.</li>
+<li><b>Page assets:</b> Font Awesome icons are loaded from a public CDN. The layout utility CSS is served with this site.</li>
 </ul>
-<h2>Advertising and affiliate links</h2>
-<p>Some links (for example NordVPN) are affiliate links; we may earn a commission if you buy through them. If advertising scripts are enabled on this site, advertising partners may use cookies or similar technologies to show ads. Check the policies of those partners.</p>
-<h2>Search Console</h2>
-<p>The site includes a Google Search Console verification tag, which does not track visitors.</p>
-<h2>Contact</h2>
-<p>Mohammad Kawsar</p>
-<p>kawsar.inct@gmail.com</p>
-<p style="margin-top:2.5rem"><a href="/">&larr; Back to the speed test</a></p>
+<p>These providers receive network requests from your browser and can see your public IP address. Their own privacy terms govern data they process. Fast Mode does not control their retention practices.</p>
+<h2>Affiliate links</h2>
+<p>Some product links are affiliate links. If you make a purchase after following one, Fast Mode may receive a commission at no additional cost to you. The link is labeled as sponsored where applicable. Following an affiliate link takes you to a third-party site.</p>
+<h2>Cookies and advertising</h2>
+<p>The current site code does not include an active advertising script or analytics tracker. If either is added later, this page should be updated to identify the relevant provider and its data practices.</p>
+<h2>Search verification</h2>
+<p>The page includes a Google Search Console verification meta tag. It is used to verify site ownership and does not itself collect visitor analytics.</p>
+<p><a href="/">← Return to Fast Mode</a></p>
 </main>
+<footer>© 2026 Fast Mode · <a href="about.html">About</a> · <a href="terms.html">Terms</a></footer>
 </body>
 </html>

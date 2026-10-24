@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="color-scheme" content="dark">
-    
+    <meta name="theme-color" content="#0f172a" id="theme-color-meta">
+    <meta name="color-scheme" content="dark light">
+    <meta name="application-name" content="Fast Mode">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script>
+      try {
+        var savedTheme = localStorage.getItem('fastmode.theme');
+        document.documentElement.setAttribute('data-theme', savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+      } catch (_) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    </script>
     <!-- PRIMARY SEO -->
-    <title>Fast Mode | Free Internet Speed Test & DNS Benchmark Tool</title>
-    <meta name="description" content="Accurately test your download and upload speeds, measure latency (ping), and benchmark DNS providers (Google, Cloudflare, OpenDNS) to optimize your internet connection.">
-    <meta name="keywords" content="internet speed test, dns benchmark, wifi analyzer, ping test, upload speed, network tools, check internet speed, dns speed test, what is my ip">
+    <title>Free Internet Speed Test: Download, Upload &amp; Ping | Fast Mode</title>
+    <meta name="description" content="Run a free browser-based internet speed test for download, upload, ping, jitter and bufferbloat. Compare public DNS response times and keep private test history on your device.">
     <meta name="robots" content="index, follow">
     <meta name="author" content="Fast Mode">
-    <!-- Replace with your actual live URL -->
     <link rel="canonical" href="https://fastmode.top/">
 
     <!-- GOOGLE SEARCH CONSOLE VERIFICATION -->
@@ -20,18 +25,21 @@
 
     <!-- OPEN GRAPH / FACEBOOK (Social SEO) -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Fast Mode">
+    <meta property="og:locale" content="en_US">
     <meta property="og:url" content="https://fastmode.top/">
-    <meta property="og:title" content="Fast Mode | Free Internet Speed Test & DNS Benchmark">
-    <meta property="og:description" content="Test your actual internet download and upload speed using real-time network requests and compare DNS performance.">
+    <meta property="og:title" content="Free Internet Speed Test: Download, Upload &amp; Ping | Fast Mode">
+    <meta property="og:description" content="Run a free browser-based speed test, compare DNS response times and keep test history private on your device.">
     <meta property="og:image" content="https://fastmode.top/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Fast Mode internet speed test and network tools">
 
     <!-- TWITTER CARD -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://fastmode.top/">
-    <meta name="twitter:title" content="Fast Mode | Free Internet Speed Test & DNS Benchmark">
-    <meta name="twitter:description" content="Test download, upload, ping and jitter, and find the fastest DNS server for your connection.">
+    <meta name="twitter:title" content="Free Internet Speed Test: Download, Upload &amp; Ping | Fast Mode">
+    <meta name="twitter:description" content="Test download, upload, ping, jitter and bufferbloat. Compare DNS responses and keep test history on your device.">
     <meta name="twitter:image" content="https://fastmode.top/og-image.png">
 
     <!-- STRUCTURED DATA (JSON-LD) for Rich Results -->
@@ -41,7 +49,7 @@
       "@type": "WebApplication",
       "name": "Fast Mode",
       "url": "https://fastmode.top/",
-      "description": "Professional tool to test internet download/upload speeds and benchmark DNS providers.",
+      "description": "Browser-based internet speed test, latency and jitter measurement, and DNS-over-HTTPS benchmark.",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web",
       "browserRequirements": "Requires JavaScript. Works on Chrome, Firefox, Safari, Edge.",
@@ -54,13 +62,13 @@
     }
     </script>
 
-    <!-- EXTERNAL ASSETS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- External presentation assets. The page content remains available if these fail. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="favicon.svg" type="image/x-icon">
+    <link rel="icon" href="favicon.svg" sizes="any">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="local-utilities.css">
+    <link rel="stylesheet" href="site-enhancements.css">
     
-    <!-- ADS SCRIPTS -->
-    <!-- <script src="https://pl28630327.effectivegatecpm.com/75/03/37/750337680b851d88fd9955df5a17a329.js"></script> -->
 
     <style>
         :root {
@@ -130,14 +138,15 @@
     </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex flex-col">
+    <a class="skip-link" href="#main-content">Skip to the speed test</a>
 
     <!-- Header / Navigation -->
-    <nav class="border-b border-slate-800 p-4 sticky top-0 bg-slate-900/80 backdrop-blur-md z-50" aria-label="Main Navigation">
+    <nav class="border-b border-slate-800 p-4 sticky top-0 bg-slate-900/80 backdrop-blur-md z-50" aria-label="Main navigation">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold flex items-center gap-2">
+            <a class="text-2xl font-bold flex items-center gap-2 brand-link" href="/" aria-label="Fast Mode home">
                 <i class="fas fa-bolt text-blue-500" aria-hidden="true"></i>
                 <span>Fast<span class="text-blue-500">Mode</span></span>
-            </div>
+            </a>
             <div class="hidden md:flex gap-6 text-sm font-medium">
                 <a href="#speed" class="hover:text-blue-400 transition" aria-label="Go to Speed Test">Speed Test</a>
                 <a href="#dns" class="hover:text-blue-400 transition" aria-label="Go to DNS Benchmark">DNS Benchmark</a>
@@ -145,10 +154,14 @@
                 <a href="#tools" class="hover:text-blue-400 transition" aria-label="Go to Optimization Tools">Optimization Tools</a>
                 <a href="#faq" class="hover:text-blue-400 transition" aria-label="Frequently Asked Questions">FAQ</a>
             </div>
-            <!-- Mobile Menu Placeholder -->
-            <button id="menu-btn" type="button" class="md:hidden text-slate-300 hover:text-white" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
-                <i class="fas fa-bars"></i>
+            <div class="nav-actions">
+            <button id="theme-btn" type="button" class="theme-toggle" aria-label="Switch to light theme" aria-pressed="false" title="Switch to light theme">
+                <i class="fas fa-sun" aria-hidden="true"></i><span class="theme-label">Light</span>
             </button>
+            <button id="menu-btn" type="button" class="md:hidden text-slate-300 hover:text-white" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            </div>
         </div>
         <div id="mobile-menu" class="hidden md:hidden max-w-6xl mx-auto mt-3 flex flex-col gap-3 text-sm font-medium">
             <a href="#speed" class="hover:text-blue-400">Speed Test</a>
@@ -159,12 +172,7 @@
         </div>
     </nav>
     
-    <main class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 flex-grow">
-
-        <!-- TOP AD PLACEMENT -->
-        <!-- <div class="max-w-4xl mx-auto px-4 mt-2" id="container-768ff6f55d83d310c3d63f95daa5dae2">
-            <div class="ad-placeholder h-14 w-full rounded-lg" aria-hidden="true">Advertisement - Top Leaderboard</div>
-        </div> -->
+    <main id="main-content" class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 flex-grow">
 
         <!-- NEW ELEMENT: NETWORK INFO DASHBOARD -->
         <section id="ip-info" class="mt-8 mb-8 animate-fade-in">
@@ -177,7 +185,7 @@
                     <div>
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Your Public IP</p>
                         <div class="flex items-center gap-2">
-                            <h3 id="user-ip" class="text-lg sm:text-xl font-mono font-bold text-white tracking-wide break-all">Detecting...</h3>
+                            <p id="user-ip" class="text-lg sm:text-xl font-mono font-bold text-white tracking-wide break-all">Detecting...</p>
                             <button id="copy-ip-btn" type="button" class="text-slate-500 hover:text-white transition text-xs" title="Copy IP" aria-label="Copy IP address">
                                 <i class="far fa-copy"></i>
                             </button>
@@ -190,7 +198,7 @@
                 <div class="flex items-center gap-4 w-full md:w-auto">
                     <div>
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Internet Provider</p>
-                        <h3 id="user-isp" class="text-lg font-bold text-slate-200 break-words">...</h3>
+                        <p id="user-isp" class="text-lg font-bold text-slate-200 break-words">...</p>
                     </div>
                 </div>
 
@@ -199,7 +207,7 @@
                 <div class="flex items-center gap-4 w-full md:w-auto">
                     <div>
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Location</p>
-                        <h3 id="user-location" class="text-lg font-bold text-slate-200 break-words">...</h3>
+                        <p id="user-location" class="text-lg font-bold text-slate-200 break-words">...</p>
                     </div>
                 </div>
             </div>
@@ -295,7 +303,7 @@
                         <div id="data-used" class="text-xs text-slate-400 h-4" aria-live="polite"></div>
                         <div id="test-server" class="text-[10px] text-slate-500 h-3"></div>
                         <p class="text-[10px] text-slate-500 max-w-sm text-center">
-                            The standard test runs about 8 seconds each way and can use 50&ndash;500&nbsp;MB on fast connections. Use light mode on mobile data.
+                            Standard mode runs for up to 8 seconds each way with byte limits of 500&nbsp;MB down and 150&nbsp;MB up. Light mode uses 40&nbsp;MB down and 20&nbsp;MB up; concurrent requests can add some overhead. Use light mode on metered data.
                         </p>
                     </div>
                 </div>
@@ -306,7 +314,7 @@
                     alt="NordVPN - Secure your internet connection" width="578" height="578"
                     class="w-full max-w-xs mx-auto rounded-lg mb-4" 
                     loading="lazy"
-                    onerror="this.onerror=null;this.src='nordbanner.gif'">
+                    >
                     
                     <h3 class="text-lg font-bold mb-3">Secure Your Connection</h3>
                     <p class="text-xs text-slate-400 mb-4">
@@ -397,14 +405,21 @@
                 </div>
                 <div class="flex gap-2">
                     <button id="history-export" type="button" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm tap"><i class="fas fa-file-csv mr-2" aria-hidden="true"></i>Export CSV</button>
+                    <button id="history-export-json" type="button" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm tap"><i class="fas fa-code mr-2" aria-hidden="true"></i>Export JSON</button>
                     <button id="history-clear" type="button" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm tap"><i class="far fa-trash-alt mr-2" aria-hidden="true"></i>Clear</button>
                 </div>
             </header>
             <p id="history-empty" class="text-slate-500 text-sm">No tests yet. Run a speed test and it will appear here.</p>
+            <figure id="history-figure" class="history-figure hidden" aria-labelledby="history-chart-title">
+                <figcaption id="history-chart-title" class="history-chart-title">Recent speed trend <span>Last 10 completed tests</span></figcaption>
+                <div id="history-chart" class="history-chart" role="img" aria-label="Download and upload speed trend"></div>
+                <div class="chart-legend" aria-hidden="true"><span><i class="legend-dot download-dot"></i>Download</span><span><i class="legend-dot upload-dot"></i>Upload</span></div>
+                <p id="history-chart-note" class="history-chart-note">Speeds are scaled together; each point represents one completed test saved on this device.</p>
+            </figure>
             <div id="history-wrap" class="hidden overflow-x-auto rounded-xl border border-slate-700">
                 <table class="w-full text-sm text-left whitespace-nowrap">
                     <thead class="bg-slate-800/60 text-slate-400 text-xs uppercase"><tr>
-                        <th class="px-3 py-2 font-semibold">Time</th><th class="px-3 py-2 font-semibold">Download</th><th class="px-3 py-2 font-semibold">Upload</th><th class="px-3 py-2 font-semibold">Ping</th><th class="px-3 py-2 font-semibold">Jitter</th><th class="px-3 py-2 font-semibold">Bloat</th>
+                        <th scope="col" class="px-3 py-2 font-semibold">Time</th><th scope="col" class="px-3 py-2 font-semibold">Download</th><th scope="col" class="px-3 py-2 font-semibold">Upload</th><th scope="col" class="px-3 py-2 font-semibold">Ping</th><th scope="col" class="px-3 py-2 font-semibold">Jitter</th><th scope="col" class="px-3 py-2 font-semibold">Bloat</th>
                     </tr></thead>
                     <tbody id="history-body"></tbody>
                 </table>
@@ -415,7 +430,7 @@
         <section id="tools" class="mb-12 pt-8 border-t border-slate-800">
             <header class="mb-8">
                 <h2 class="text-3xl font-bold">Wi-Fi Optimization Toolkit</h2>
-                <p class="text-slate-400">Essential software to diagnose signal strength, analyze channels, and boost performance.</p>
+                <p class="text-slate-400">Third-party tools can help inspect Wi-Fi coverage, channels and nearby interference. Results depend on your device and environment.</p>
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -491,7 +506,7 @@
         <section id="blog" class="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-slate-800 pt-12">
             <div class="md:col-span-2 space-y-8 text-slate-300 leading-relaxed">
                 <article>
-                    <h3 class="text-2xl font-bold mb-4 gradient-text text-white">Understanding Download vs. Upload Speed</h3>
+                    <h2 class="text-2xl font-bold mb-4 gradient-text text-white">Understanding Download vs. Upload Speed</h2>
                     <p class="mb-4">
                         <b>Download speed</b> refers to how fast your connection can pull data from the internet (watching Netflix, downloading files, browsing web pages). 
                     </p>
@@ -504,7 +519,7 @@
                 </article>
 
                 <article>
-                    <h3 class="text-2xl font-bold mb-4 gradient-text text-white">How Our Speed Test Works</h3>
+                    <h2 class="text-2xl font-bold mb-4 gradient-text text-white">How Our Speed Test Works</h2>
                     <p class="mb-4">
                         We first measure latency with a series of tiny requests on an already-open connection and report the median ping and the jitter (the average change between consecutive samples).
                     </p>
@@ -521,9 +536,9 @@
 
             <aside class="space-y-6">
                 <div class="bg-slate-800/30 p-6 rounded-2xl h-fit border border-slate-700/50">
-                    <h4 class="font-bold mb-4 flex items-center gap-2">
+                    <h3 class="font-bold mb-4 flex items-center gap-2">
                         <i class="fas fa-info-circle text-blue-400" aria-hidden="true"></i> Technical Glossary
-                    </h4>
+                    </h3>
                     <div class="space-y-4 text-sm">
                         <div>
                             <span class="text-blue-400 font-bold block">Latency (Ping)</span>
@@ -566,7 +581,7 @@
                         </span>
                     </summary>
                     <div class="text-slate-400 px-6 pb-6 pt-0 leading-relaxed border-t border-slate-700/30 mt-2 pt-4">
-                        Advertised speeds are usually "up to" maximums over a wired Ethernet connection. Wi-Fi interference, router distance, old hardware, and network congestion during peak hours (7 PM - 11 PM) can all significantly lower your actual speed.
+                        Advertised speeds are typically maximums measured under specific conditions. Wi-Fi interference, router distance, device limits and network congestion can lower the speed you measure. Compare over Ethernet when possible, then test near the router to isolate Wi-Fi effects.
                     </div>
                 </details>
 
@@ -579,10 +594,10 @@
                     </summary>
                     <div class="text-slate-400 px-6 pb-6 pt-0 leading-relaxed border-t border-slate-700/30 mt-2 pt-4">
                         <ul class="list-disc pl-5 space-y-1">
-                            <li><b>0-20ms:</b> Excellent. Pro-level gaming.</li>
-                            <li><b>20-50ms:</b> Good. Standard for most gamers.</li>
-                            <li><b>50-100ms:</b> Fair. Playable but may feel sluggish.</li>
-                            <li><b>100ms+:</b> Poor. Noticeable lag will occur in fast-paced games.</li>
+                            <li><b>Under 20 ms:</b> Usually very responsive, depending on the game server route.</li>
+                            <li><b>20-50 ms:</b> Often comfortable for many games.</li>
+                            <li><b>50-100 ms:</b> Noticeable delay may affect fast-paced games.</li>
+                            <li><b>Over 100 ms:</b> Delay is more likely to be noticeable.</li>
                         </ul>
                     </div>
                 </details>
@@ -595,7 +610,7 @@
                         </span>
                     </summary>
                     <div class="text-slate-400 px-6 pb-6 pt-0 leading-relaxed border-t border-slate-700/30 mt-2 pt-4">
-                        Technically, no. Changing DNS does not increase your bandwidth (download speed). However, it can make browsing feel <i>snappier</i> by resolving website names faster, and it can bypass ISP blocks or throttling on certain sites.
+                        No. A DNS resolver does not increase your connection bandwidth. A faster resolver may shorten the initial lookup before a site opens, but the difference depends on caching, routing, and the resolver. This browser test compares DNS-over-HTTPS response times from your current device; it does not measure every app or your ISP&rsquo;s configured resolver.
                     </div>
                 </details>
 
@@ -612,8 +627,6 @@
                 </details>
             </div>
         </section>
-        <div class="flex justify-center w-full">
-</div>
 
     </main>
 
@@ -629,10 +642,8 @@
     </footer>
 
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity pointer-events-none z-50" role="status" aria-live="polite"></div>
-    <noscript><p style="text-align:center;padding:1rem">Fast Mode needs JavaScript to run the speed test and DNS benchmark.</p></noscript>
+    <noscript><p style="text-align:center;padding:1rem">Fast Mode needs JavaScript to run the speed test and DNS benchmark. The learning guides and privacy information remain available without it.</p></noscript>
     <script src="app.js" defer></script>
-    <!-- <script async="async" data-cfasync="false" src="https://pl28630357.effectivegatecpm.com/768ff6f55d83d310c3d63f95daa5dae2/invoke.js"></script>
-    <script src="https://pl28630354.effectivegatecpm.com/ea/26/96/ea269698879f9454daf90b4b6807943f.js"></script> -->
 </body>
 </html>
 

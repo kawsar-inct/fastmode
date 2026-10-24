@@ -1,82 +1,35 @@
-# Fast Mode – Free Internet Speed Test, DNS Benchmark & Network Diagnostics Tool
+# Fast Mode
 
-Fast Mode is a free, modern, and lightweight **Internet Speed Test** and **DNS Benchmark** web application that helps users analyze their network performance directly from their browser. Built with **HTML5**, **CSS3**, and **Vanilla JavaScript**, it accurately measures **download speed**, **upload speed**, **ping (latency)**, **jitter**, and compares the performance of popular **DNS servers** using secure **DNS-over-HTTPS (DoH)** technology.
+Fast Mode is a static, browser-based network diagnostics website. It includes an internet speed test, DNS-over-HTTPS benchmark, public IP and approximate network details, local test history, CSV/JSON export, and responsive educational content.
 
-Unlike traditional speed test websites, Fast Mode runs entirely in the browser with a clean, responsive interface and requires no extensions or software installation.
+Live site: https://www.fastmode.top
 
-🌐 **Live Website:** https://www.fastmode.top
+## Included features
 
----
+- Download and upload speed measurement with warm-up handling, parallel streams and a light mode for capped data use
+- Repeated latency samples, jitter, loaded latency, and estimated packet loss
+- DNS-over-HTTPS comparisons for public resolver endpoints, with approximate results labeled when a browser blocks readable responses
+- Public IP, ISP and approximate location lookup
+- Private browser-only history for up to 25 tests with a trend chart and CSV/JSON downloads
+- Persistent Mbps/MB/s and dark/light preferences
+- Responsive layout, keyboard skip link, visible focus styles, reduced-motion support and page metadata
 
-## 🚀 Features
+## Run locally
 
-### ⚡ Internet Speed Test
+This is a static site with no build step. Serve the `fastmode-main` folder from a local web server or upload its contents to a static host. Network diagnostics require a secure context (HTTPS, or localhost in development) and may be limited by browser CORS rules, extensions, DNS provider availability, or network policy.
 
-Measure your internet connection in real time with accurate performance metrics.
+## Production deployment notes
 
-* Download test: parallel streams, time-boxed, warm-up discarded
-* Upload test: parallel streams with real upload progress
-* Ping: median of repeated requests on a warm connection
-* Jitter: mean change between consecutive ping samples
-* Light mode for metered connections (switched on automatically when Data Saver or a slow/cellular link is detected); data used is shown after each test
-* Adaptive parallel streams: more connections are added automatically on very fast lines
-* Loaded latency (bufferbloat grade A-F) measured during download and upload
-* Packet loss estimate from timed-out probes
-* "What can I do with this?" ratings for browsing, 4K, video calls and gaming
-* Mbps / MB/s toggle, native share sheet, screen wake-lock during tests
-* Local test history (last 25 results) with CSV export
-* Real-time Progress Indicators
-* Mobile & Desktop Compatible
+- Configure the production host to serve `index.html` at `/` and keep the supporting HTML, CSS, JavaScript, image, manifest, sitemap and robots files at their listed paths.
+- Keep the canonical domain consistent with the actual redirect/canonical policy. The current metadata uses `https://fastmode.top/`.
+- Layout utilities are served from the included `local-utilities.css`, so the page does not need Tailwind’s browser compiler. Font Awesome remains an external CDN dependency for icons; self-host or pin it if your deployment requires all assets to be local, and update the privacy notice when dependencies change.
+- Verify all test and lookup endpoints from the production origin. Browser CORS or provider changes can make a provider unavailable; endpoint behavior is not controlled by this static site.
+- Review the privacy policy and terms against the actual hosting, advertising, affiliate and legal requirements before launch. No contact address is included because none was configured in this project.
+- After changing pages, update `sitemap.xml` last-modified dates and submit the sitemap in Google Search Console. Structured data and metadata do not guarantee indexing or ranking.
 
----
+## Configure test endpoints
 
-### 🌍 DNS Benchmark Tool
-
-Compare the response times of leading public DNS providers to find the fastest DNS server for your internet connection.
-
-Supported DNS providers include:
-
-* Cloudflare DNS (1.1.1.1)
-* Google Public DNS (8.8.8.8)
-* Quad9 DNS
-* OpenDNS
-* AdGuard DNS
-* CleanBrowsing DNS
-* AliDNS
-
-Measurements use real **DNS-over-HTTPS (DoH, RFC 8484)** queries: one warm-up query, then several timed queries on the warm connection, reported as the median for both a cached and an uncached name. Providers that block cross-origin answers are shown as approximate and are not ranked.
-
----
-
-### 🌐 Network Information
-
-Automatically detect your current network information, including:
-
-* Public IP Address
-* Internet Service Provider (ISP)
-* Approximate Location
-* Connection Details
-
----
-
-### 📚 Internet Learning Center
-
-Fast Mode also includes educational resources covering:
-
-* What is Internet Speed?
-* What is Ping?
-* What is Jitter?
-* DNS Explained
-* Mbps vs MB/s
-* How to Improve Wi-Fi Speed
-* Best DNS Servers for Gaming
-* Network Troubleshooting Tips
-
----
-
-## ⚙️ Configuration
-
-Test endpoints (Cloudflare speed-test servers by default) can be overridden, for example to use your own servers, by defining `window.FASTMODE_CONFIG` before `app.js` loads:
+Set `window.FASTMODE_CONFIG` before `app.js` loads to override test services. For example:
 
 ```html
 <script>
@@ -89,59 +42,8 @@ Test endpoints (Cloudflare speed-test servers by default) can be overridden, for
 <script src="app.js" defer></script>
 ```
 
-Your server needs CORS enabled (`Access-Control-Allow-Origin`, and `Timing-Allow-Origin` for the most precise ping).
+The endpoints need appropriate CORS headers. `Timing-Allow-Origin` can expose more precise resource timing where supported. Keep the server configuration and user-facing privacy information in sync with any endpoint changes.
 
----
+## Data and privacy
 
-## ✨ Why Fast Mode?
-
-* Completely Free
-* No Registration Required
-* No Software Installation
-* Lightweight & Fast
-* Modern Responsive UI
-* Privacy Friendly
-* Cross-Platform
-* SEO Optimized
-* Mobile Friendly
-
----
-
-## 🛠 Technology Stack
-
-* HTML5
-* CSS3
-* Vanilla JavaScript (ES6+)
-* Fetch API
-* DNS-over-HTTPS (DoH)
-* REST APIs
-
----
-
-## 🔍 Keywords
-
-Internet Speed Test, Speed Test, Online Speed Test, WiFi Speed Test, Broadband Speed Test, Upload Speed Test, Download Speed Test, Ping Test, Latency Test, Jitter Test, DNS Benchmark, DNS Speed Test, DNS Checker, Public DNS, Cloudflare DNS, Google DNS, Network Diagnostics, Network Analyzer, Internet Performance Test, Network Speed Monitor, DNS-over-HTTPS, DoH, ISP Checker, IP Address Lookup, JavaScript Speed Test, HTML5 Speed Test, Web Speed Test, Fast Internet Test.
-
----
-
-## 🌟 Live Demo
-
-Visit the live application:
-
-**https://www.fastmode.top**
-
----
-
-## ⭐ Contributing
-
-Contributions, feature requests, and bug reports are welcome. Feel free to fork the project, open an issue, or submit a pull request.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-If you find Fast Mode useful, please consider giving this repository a ⭐ on GitHub. Your support helps improve the project and makes it easier for others to discover.
+The site does not have an account or results backend. Browser local storage keeps up to 25 test records and the selected display unit and theme on the current device. The browser contacts third-party speed-test, IP lookup, DNS, and CDN services as described in `privacy.html`.

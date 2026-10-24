@@ -922,12 +922,72 @@
     renderHistory();
   }
   function num(x, f) { return x == null || !isFinite(x) ? '-' : Number(x).toFixed(f || 0); }
+  function renderHistoryChart(history) {
+    var figure = $('history-figure'), host = $('history-chart');
+    if (!figure || !host) return;
+    var series = history.slice(0, 10).filter(function (e) {
+      return isFinite(+e.t) && ((e.d != null && isFinite(+e.d)) || (e.u != null && isFinite(+e.u)));
+    }).reverse();
+    figure.classList.toggle('hidden', series.length < 2);
+    host.replaceChildren();
+    if (series.length < 2) return;
+
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 720 210');
+    svg.setAttribute('role', 'img');
+    var max = Math.max.apply(null, series.reduce(function (a, e) { a.push(+e.d || 0, +e.u || 0); return a; }, []));
+    max = Math.max(1, max * 1.12);
+    var left = 46, right = 12, top = 16, bottom = 32, plotW = 720 - left - right, plotH = 210 - top - bottom;
+    svg.setAttribute('aria-label', 'Download and upload trend across ' + series.length + ' saved tests, from 0 to ' + speedLabel(max) + '.');
+    function el(tag, attrs, label) {
+      var node = document.createElementNS(ns, tag);
+      Object.keys(attrs || {}).forEach(function (key) { node.setAttribute(key, attrs[key]); });
+      if (label != null) node.textContent = label;
+      return node;
+    }
+    for (var i = 0; i <= 3; i++) {
+      var y = top + plotH * i / 3;
+      svg.appendChild(el('line', { x1:left, y1:y, x2:720-right, y2:y, stroke:'currentColor', 'stroke-opacity':'.14', 'stroke-dasharray':i ? '3 5' : '0' }));
+      svg.appendChild(el('text', { x:left-8, y:y+4, 'text-anchor':'end', fill:'currentColor', 'fill-opacity':'.7', 'font-size':'11' }, speedLabel(max * (1 - i / 3))));
+    }
+    function coords(key) {
+      return series.map(function (entry, index) {
+        var value = entry[key] == null ? NaN : +entry[key];
+        var x = left + (series.length === 1 ? plotW / 2 : plotW * index / (series.length - 1));
+        var y = top + plotH * (1 - (isFinite(value) ? value : 0) / max);
+        return { x:x, y:y, value:isFinite(value) ? value : null, entry:entry };
+      });
+    }
+    [['d','#34d399','Download'],['u','#c084fc','Upload']].forEach(function (line) {
+      var points = coords(line[0]);
+      var valid = points.filter(function (point) { return point.value !== null; });
+      if (valid.length > 1) svg.appendChild(el('polyline', {
+        points:valid.map(function (point) { return point.x + ',' + point.y; }).join(' '),
+        fill:'none', stroke:line[1], 'stroke-width':'3', 'stroke-linecap':'round', 'stroke-linejoin':'round'
+      }));
+      valid.forEach(function (point, index) {
+        var date = new Date(+point.entry.t);
+        var dot = el('circle', { cx:point.x, cy:point.y, r:'4.5', fill:line[1], stroke:'#0f172a', 'stroke-width':'2' });
+        var tip = el('title', {}, line[2] + ': ' + speedLabel(point.value) + ' · ' + date.toLocaleString());
+        dot.appendChild(tip); svg.appendChild(dot);
+        if (line[0] === 'd' && (index === 0 || index === valid.length - 1)) {
+          svg.appendChild(el('text', { x:point.x, y:198, 'text-anchor':index === 0 ? 'start' : 'end', fill:'currentColor', 'fill-opacity':'.68', 'font-size':'10' }, date.toLocaleDateString()));
+        }
+      });
+    });
+    host.appendChild(svg);
+    var note = $('history-chart-note');
+    if (note) note.textContent = 'Showing ' + series.length + ' recent tests. Results stay in this browser; compare trends under similar Wi-Fi and device conditions.';
+  }
+
   function renderHistory() {
     var body = $('history-body');
     if (!body) return;
-    var h = loadHistory();
+    var h = loadHistory().filter(function (e) { return e && isFinite(+e.t); });
     $('history-empty').classList.toggle('hidden', h.length > 0);
     $('history-wrap').classList.toggle('hidden', h.length === 0);
+    renderHistoryChart(h);
     body.innerHTML = h.map(function (e) {
       return '<tr class="border-t border-slate-800"><td class="px-3 py-2 text-slate-400">' + new Date(+e.t).toLocaleString() + '</td>' +
         '<td class="px-3 py-2 text-emerald-400 font-semibold">' + (e.d == null ? '-' : speedLabel(+e.d)) + '</td>' +
@@ -947,6 +1007,50 @@
     a.download = 'fastmode-history.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  function exportHistoryJson() {
+    var history = loadHistory();
+    if (!history.length) { showToast('Nothing to export yet'); return; }
+    var data = {
+      exportedAt: new Date().toISOString(),
+      source: 'Fast Mode browser history',
+      units: 'Mbps for download and upload; milliseconds for latency metrics',
+      records: history
+    };
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type:'application/json' }));
+    a.download = 'fastmode-history.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  function setTheme(theme) {
+    var light = theme === 'light';
+    document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', light ? '#f1f5f9' : '#0f172a');
+    var btn = $('theme-btn');
+    if (btn) {
+      btn.setAttribute('aria-pressed', String(light));
+      btn.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+      btn.title = light ? 'Switch to dark theme' : 'Switch to light theme';
+      btn.innerHTML = light ? '<i class="fas fa-moon" aria-hidden="true"></i><span class="theme-label">Dark</span>' : '<i class="fas fa-sun" aria-hidden="true"></i><span class="theme-label">Light</span>';
+    }
+  }
+
+  function initTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem('fastmode.theme'); } catch (_) { /* storage may be disabled */ }
+    var initial = saved === 'light' || saved === 'dark' ? saved :
+      (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    setTheme(initial);
+    var btn = $('theme-btn');
+    if (btn) btn.addEventListener('click', function () {
+      var next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      setTheme(next);
+      try { localStorage.setItem('fastmode.theme', next); } catch (_) { /* storage may be disabled */ }
+    });
   }
 
   function connInfo() {
@@ -972,18 +1076,32 @@
   function initMobileMenu() {
     var btn = $('menu-btn'), panel = $('mobile-menu');
     if (!btn || !panel) return;
+    function closeMenu() {
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+    }
     btn.addEventListener('click', function () {
       var open = panel.classList.toggle('hidden') === false;
       btn.setAttribute('aria-expanded', String(open));
     });
     panel.addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') { panel.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }
+      if (e.target.closest('a')) closeMenu();
     });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+        closeMenu();
+        btn.focus();
+      }
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 768) closeMenu();
+    }, { passive: true });
   }
 
   function init() {
     initDNSCards();
     initMobileMenu();
+    initTheme();
     $('start-btn').addEventListener('click', startRealTest);
     $('share-btn').addEventListener('click', copyResults);
     $('copy-ip-btn').addEventListener('click', copyIP);
@@ -995,6 +1113,7 @@
       renderUnits();
     });
     $('history-export').addEventListener('click', exportHistory);
+    $('history-export-json').addEventListener('click', exportHistoryJson);
     $('history-clear').addEventListener('click', function () {
       try { localStorage.removeItem(HKEY); } catch (_) { /* ignore */ }
       renderHistory(); showToast('History cleared');
@@ -1009,6 +1128,7 @@
     if (nc && nc.addEventListener) nc.addEventListener('change', connInfo);
     connInfo();
     renderUnits();
+    renderHistory();
     fetchIPInfo();
   }
 

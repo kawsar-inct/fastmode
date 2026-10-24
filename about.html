@@ -1,30 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About Fast Mode | Fast Mode</title>
-<meta name="robots" content="index, follow">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
-<style>
-  body{margin:0;background:#0f172a;color:#cbd5e1;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.7}
-  main{max-width:720px;margin:0 auto;padding:2rem 1.25rem 4rem}
-  a{color:#60a5fa} h1{color:#fff} h2{color:#fff;margin-top:2rem;font-size:1.2rem}
-  nav{border-bottom:1px solid #1e293b;padding:1rem 1.25rem} nav a{color:#fff;font-weight:700;text-decoration:none;font-size:1.25rem} nav span{color:#3b82f6}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>About Fast Mode | Browser-Based Internet Diagnostics</title>
+<meta name="description" content="Learn how Fast Mode measures internet speed, latency, jitter, bufferbloat and DNS response times in your browser. See what the results can and cannot tell you.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://fastmode.top/about.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fast Mode">
+<meta property="og:url" content="https://fastmode.top/about.html">
+<meta property="og:title" content="About Fast Mode | Browser-Based Internet Diagnostics">
+<meta property="og:description" content="Learn what Fast Mode measures and how to interpret its browser-based network results.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="legal.css">
 </head>
 <body>
-<nav><a href="/">Fast<span>Mode</span></a></nav>
-<main>
-<h1>About Fast Mode</h1>
-<p>Fast Mode is a free tool that measures your internet connection from your browser: download speed, upload speed, ping and jitter, plus a DNS benchmark that compares public DNS providers over DNS-over-HTTPS.</p>
-<p>There is nothing to install and no account to create. The site is funded by affiliate links and may show advertising in the future.</p>
-<h2>How accurate is it?</h2>
-<p>Browser-based tests are very good at showing what your connection can do in practice, but they are influenced by your device, Wi-Fi, browser extensions and distance to the test server. See <a href="/#blog">how the test works</a> for details.</p>
-<h2>Contact</h2>
-<p>Mohammad Kawsar</p>
-<p>kawsar.inct@gmail.com</p>
-<p style="margin-top:2.5rem"><a href="/">&larr; Back to the speed test</a></p>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav aria-label="Main navigation"><a href="/" aria-label="Fast Mode home">Fast<span>Mode</span></a></nav>
+<main id="main">
+<p class="eyebrow">About Fast Mode</p>
+<h1>Understand your connection, one measurement at a time.</h1>
+<p class="lede">Fast Mode is a free browser-based network toolkit for checking download and upload throughput, latency, jitter, loaded latency, estimated packet loss and public DNS response time.</p>
+<div class="page-card"><p>Run a test without creating an account or installing an app. Results are estimates of how this device and browser reach the selected test services at the time you run them.</p></div>
+<h2>How the speed test works</h2>
+<p>The test sends real network requests to third-party test endpoints. It measures repeated latency samples, then measures download and upload throughput with parallel requests. It also checks latency while the connection is busy. The values can vary with Wi-Fi conditions, device performance, browser behavior, VPNs, congestion and the route to the test server.</p>
+<h2>What the DNS benchmark measures</h2>
+<p>The DNS benchmark sends DNS-over-HTTPS queries to selected public resolvers and compares the response times visible from your browser. It is not a direct measurement of plain DNS over UDP, your operating system’s resolver, or the DNS configuration used by every app.</p>
+<h2>Privacy by design</h2>
+<p>Test history and display preferences are saved in local browser storage on this device. Fast Mode does not upload those saved results to its own server. The browser does contact the third-party test, IP lookup and DNS providers described in the <a href="privacy.html">Privacy Policy</a>.</p>
+<h2>Explore the tools</h2>
+<ul><li><a href="/#speed">Internet speed test</a></li><li><a href="/#dns">DNS benchmark</a></li><li><a href="/#history">Private local test history</a></li><li><a href="/#faq">Frequently asked questions</a></li></ul>
+<p><a href="/">← Return to Fast Mode</a></p>
 </main>
+<footer>© 2026 Fast Mode · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></footer>
 </body>
 </html>
