@@ -23,8 +23,8 @@
     uploadChunkBytes: 2000000,
     gaugeMaxMbps: 1000,
     profiles: {
-      standard: { latencySamples: 12, dlMs: 8000, ulMs: 8000, warmupMs: 1500, dlMaxBytes: 300e6, ulMaxBytes: 100e6, dlStreams: 6, ulStreams: 4 },
-      light:    { latencySamples: 8,  dlMs: 5000, ulMs: 5000, warmupMs: 1000, dlMaxBytes: 40e6,  ulMaxBytes: 20e6,  dlStreams: 4, ulStreams: 3 }
+      standard: { latencySamples: 20, dlMs: 8000, ulMs: 8000, warmupMs: 1500, dlMaxBytes: 500e6, ulMaxBytes: 150e6, dlStreams: 4, dlMaxStreams: 12, ulStreams: 3, ulMaxStreams: 8 },
+      light:    { latencySamples: 10, dlMs: 5000, ulMs: 5000, warmupMs: 1000, dlMaxBytes: 40e6,  ulMaxBytes: 20e6,  dlStreams: 3, dlMaxStreams: 6, ulStreams: 2, ulMaxStreams: 4 }
     },
     ipApis: [
       { url: 'https://ipapi.co/json/', parse: function (d) {
@@ -54,8 +54,8 @@
       { name: 'CleanBrowsing', url: 'https://doh.cleanbrowsing.org/doh/family-filter/',   ip: '185.228.168.168', ip_alt: '185.228.169.168', color: '#6366f1' },
       { name: 'AliDNS',        url: 'https://dns.alidns.com/dns-query',                   ip: '223.5.5.5',       ip_alt: '223.6.6.6',       color: '#f43f5e' }
     ],
-    dnsCachedQueries: 5,
-    dnsUncachedQueries: 2,
+    dnsCachedQueries: 6,
+    dnsUncachedQueries: 3,
     dnsTimeoutMs: 4000
   };
 
@@ -88,8 +88,12 @@
     return sum / (arr.length - 1);
   }
 
-  function formatSpeed(mbps) {
+  function formatSpeed(mbps, mode) {
     if (!isFinite(mbps) || mbps < 0) mbps = 0;
+    if ((mode || unitMode) === 'MBps') {
+      var m = mbps / 8;
+      return { value: m.toFixed(m >= 100 ? 0 : m >= 1 ? 1 : 2), unit: 'MB/s' };
+    }
     if (mbps >= 1000) return { value: (mbps / 1000).toFixed(2), unit: 'Gbps' };
     if (mbps >= 100) return { value: mbps.toFixed(0), unit: 'Mbps' };
     if (mbps >= 1) return { value: mbps.toFixed(1), unit: 'Mbps' };
@@ -209,7 +213,11 @@
     g.style.strokeDashoffset = String(283 - 283 * pct);
   }
 
-  function showLive(mbps) {
+  function showLive(mbps, exact) {
+    // Light smoothing on the live needle only; final results are shown exactly.
+    if (exact || showLive._v == null) showLive._v = mbps;
+    else showLive._v = 0.65 * showLive._v + 0.35 * mbps;
+    mbps = showLive._v;
     var f = formatSpeed(mbps);
     $('current-speed').textContent = f.value;
     $('speed-unit').textContent = f.unit;
@@ -217,8 +225,14 @@
   }
 
   function resetUI() {
+    last = null;
+    showLive._v = null;
     $('current-speed').textContent = '0.0';
-    $('speed-unit').textContent = 'Mbps';
+    $('speed-unit').textContent = unitMode === 'MBps' ? 'MB/s' : 'Mbps';
+    ['dl-ping-val', 'ul-ping-val'].forEach(function (id) { $(id).textContent = '- ms'; });
+    $('loss-val').textContent = '-';
+    $('bloat-val').textContent = '-';
+    $('insights').innerHTML = '';
     $('ping-val').textContent = '- ms';
     $('jitter-val').textContent = '- ms';
     $('down-val').textContent = '-';
@@ -250,23 +264,62 @@
     return { wall: wall, rt: rt };
   }
 
+  // One timed request with its own timeout, linked to the run's abort controller.
+  async function probe(url, ms, parent) {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, ms);
+    var onAbort = function () { ac.abort(); };
+    parent.addEventListener('abort', onAbort);
+    try { return await timedFetch(url, ac.signal); }
+    finally { clearTimeout(t); parent.removeEventListener('abort', onAbort); }
+  }
+
+  // Timing source must be identical for every sample so they stay comparable.
+  function pickTimes(raw, source) {
+    var useRt = source === 'rt' || (source == null && raw.length && raw.every(function (x) { return x.rt !== null; }));
+    if (useRt && !raw.every(function (x) { return x.rt !== null; })) useRt = false;
+    return { times: raw.map(function (x) { return useRt ? x.rt : x.wall; }), source: useRt ? 'rt' : 'wall' };
+  }
+
   async function measureLatency(profile, run) {
     var ac = new AbortController();
     run.aborters.push(ac);
-    await timedFetch(CFG.latencyUrl, ac.signal); // warm-up: opens the connection, result discarded
-    var raw = [];
-    function pick() { // use one timing source for ALL samples so they stay comparable
-      var useRt = raw.length && raw.every(function (x) { return x.rt !== null; });
-      return raw.map(function (x) { return useRt ? x.rt : x.wall; });
-    }
+    try { await probe(CFG.latencyUrl, 4000, ac.signal); } // warm-up: opens the connection, discarded
+    catch (e) { if (run.aborted) return { samples: [] }; throw e; }
+    var raw = [], lost = 0, sent = 0;
     for (var i = 0; i < profile.latencySamples; i++) {
       if (run.aborted) break;
-      raw.push(await timedFetch(CFG.latencyUrl, ac.signal));
-      $('ping-val').textContent = Math.round(median(pick())) + ' ms';
+      sent++;
+      try {
+        raw.push(await probe(CFG.latencyUrl, 2500, ac.signal));
+        $('ping-val').textContent = Math.round(median(pickTimes(raw).times)) + ' ms';
+      } catch (e) { if (run.aborted) break; lost++; }
       await sleep(60);
     }
-    var samples = pick();
-    return { ping: median(samples), jitter: jitter(samples), samples: samples };
+    var p = pickTimes(raw), s = p.times;
+    if (!s.length && !run.aborted) throw new Error('Latency probes failed');
+    return { ping: median(s), min: s.length ? Math.min.apply(null, s) : NaN, jitter: jitter(s),
+             loss: sent ? lost / sent * 100 : 0, samples: s, source: p.source };
+  }
+
+  // Latency while the line is saturated (bufferbloat). Uses the same timing source as idle ping.
+  function loadedPing(run, source) {
+    var s = { stop: false, raw: [] };
+    var ac = new AbortController();
+    run.aborters.push(ac);
+    s.done = (async function () {
+      await sleep(600);
+      while (!s.stop && !run.aborted) {
+        try { var r = await probe(CFG.latencyUrl, 2500, ac.signal); if (!s.stop) s.raw.push(r); } catch (e) { /* lost under load */ }
+        await sleep(150);
+      }
+    })();
+    s.finish = async function () {
+      s.stop = true; ac.abort(); await s.done;
+      var t = pickTimes(s.raw.slice(1), source).times; // first probe may open a new connection
+      return t.length >= 3 ? median(t) : null;
+    };
+    return s;
   }
 
   /* ------------------------------------------------------------------ *
@@ -291,34 +344,42 @@
     }
   }
 
-  async function timeBox(meter, durationMs, maxBytes, run, workersDone, onTick) {
+  async function timeBox(meter, durationMs, maxBytes, minMs, run, workersDone, onTick, grow) {
     var finished = false;
     workersDone.then(function () { finished = true; });
     for (;;) {
       await sleep(100);
-      var el = meter.now();
-      onTick(meter.live(1000));
-      if (run.aborted || finished || el >= durationMs || meter.bytes >= maxBytes) break;
+      var el = meter.now(), rate = meter.live(1000);
+      onTick(rate);
+      if (grow) grow(rate, el);
+      // The byte cap only applies once there is enough post-warm-up data for an accurate result.
+      if (run.aborted || finished || el >= durationMs || (meter.bytes >= maxBytes && el >= minMs)) break;
     }
   }
 
   async function runDownload(profile, run) {
-    var lastError = null;
+    var lastError = null, maxS = profile.dlMaxStreams || profile.dlStreams;
     for (var u = 0; u < CFG.downloadUrls.length; u++) {
-      var url = CFG.downloadUrls[u];
-      var meter = new Meter();
-      var ac = new AbortController();
+      var url = CFG.downloadUrls[u], meter = new Meter(), ac = new AbortController();
       run.aborters.push(ac);
-      var state = { stop: false, error: null };
-      var workers = [];
-      for (var i = 0; i < profile.dlStreams; i++) workers.push(downloadWorker(url, ac.signal, meter, state));
-      var done = Promise.all(workers);
-      await timeBox(meter, profile.dlMs, profile.dlMaxBytes, run, done, showLive);
+      var state = { stop: false, error: null }, workers = [], lastGrow = 0;
+      var add = function (n) { for (var i = 0; i < n; i++) workers.push(downloadWorker(url, ac.signal, meter, state)); };
+      add(profile.dlStreams);
+      var done = Promise.all(workers.slice());
+      // Adaptive: when each stream is already fast the line is probably faster than we can fill, so add streams.
+      var grow = function (rate, el) {
+        if (el < 1000 || el - lastGrow < 800 || workers.length >= maxS) return;
+        if (rate > workers.length * 40) { lastGrow = el; add(2); }
+      };
+      await timeBox(meter, profile.dlMs, profile.dlMaxBytes, profile.warmupMs + 1200, run, done, showLive, grow);
       state.stop = true;
       ac.abort();
-      await done;
+      await Promise.all(workers);
       if (run.aborted) return { aborted: true, bytes: meter.bytes };
-      if (meter.bytes > 0) return { mbps: meter.final(profile.warmupMs), bytes: meter.bytes, url: url };
+      if (meter.bytes > 0) {
+        var skip = Math.min(Math.max(profile.warmupMs, lastGrow ? lastGrow + 800 : 0), profile.dlMs * 0.5);
+        return { mbps: meter.final(skip), bytes: meter.bytes, url: url, streams: workers.length };
+      }
       lastError = state.error;
     }
     throw lastError || new Error('Download endpoints unreachable');
@@ -369,29 +430,33 @@
   }
 
   async function runUpload(profile, run) {
-    var blob = makePayload(CFG.uploadChunkBytes);
-    var modes = ['xhr', 'fetch'];
-    var lastError = null;
+    var blob = makePayload(CFG.uploadChunkBytes), modes = ['xhr', 'fetch'], lastError = null;
+    var maxS = profile.ulMaxStreams || profile.ulStreams;
     for (var m = 0; m < modes.length; m++) {
-      var meter = new Meter();
-      var ac = new AbortController();
+      var mode = modes[m], meter = new Meter(), ac = new AbortController();
       run.aborters.push(ac);
-      var state = { stop: false, error: null, xhrs: [] };
-      var workers = [];
-      var n = profile.ulStreams;
-      for (var i = 0; i < n; i++) {
-        workers.push(modes[m] === 'xhr'
+      var state = { stop: false, error: null, xhrs: [] }, workers = [], lastGrow = 0;
+      var add = function (n) {
+        for (var i = 0; i < n; i++) workers.push(mode === 'xhr'
           ? uploadWorkerXhr(CFG.uploadUrl, blob, meter, state)
           : uploadWorkerFetch(CFG.uploadUrl, blob, ac.signal, meter, state));
-      }
-      var done = Promise.all(workers);
-      await timeBox(meter, profile.ulMs, profile.ulMaxBytes, run, done, showLive);
+      };
+      add(profile.ulStreams);
+      var done = Promise.all(workers.slice());
+      var grow = function (rate, el) {
+        if (el < 1000 || el - lastGrow < 800 || workers.length >= maxS) return;
+        if (rate > workers.length * 25) { lastGrow = el; add(2); }
+      };
+      await timeBox(meter, profile.ulMs, profile.ulMaxBytes, profile.warmupMs + 1200, run, done, showLive, grow);
       state.stop = true;
       state.xhrs.forEach(function (x) { try { x.abort(); } catch (_) {} });
       ac.abort();
-      await done;
+      await Promise.all(workers);
       if (run.aborted) return { aborted: true, bytes: meter.bytes };
-      if (meter.bytes > 0) return { mbps: meter.final(profile.warmupMs), bytes: meter.bytes, mode: modes[m] };
+      if (meter.bytes > 0) {
+        var skip = Math.min(Math.max(profile.warmupMs, lastGrow ? lastGrow + 800 : 0), profile.ulMs * 0.5);
+        return { mbps: meter.final(skip), bytes: meter.bytes, mode: mode, streams: workers.length };
+      }
       lastError = state.error;
     }
     throw lastError || new Error('Upload endpoint unreachable');
@@ -428,10 +493,12 @@
     var profile = CFG.profiles[$('light-mode') && $('light-mode').checked ? 'light' : 'standard'];
     var btn = $('start-btn');
     var shareBtn = $('share-btn');
-    var results = { ping: null, jitter: null, down: null, up: null, bytes: 0 };
+    var results = { ping: null, jitter: null, loss: null, down: null, up: null, dlPing: null, ulPing: null, bloat: null, src: null, bytes: 0 };
     var errors = [];
 
     btn.textContent = 'STOP';
+    run.hidden = false;
+    lockScreen();
     shareBtn.classList.add('hidden');
     resetUI();
     $('test-server').textContent = '';
@@ -445,6 +512,9 @@
         if (lat.samples.length) {
           results.ping = lat.ping;
           results.jitter = lat.jitter;
+          results.loss = lat.loss;
+          results.src = lat.source;
+          $('loss-val').textContent = (lat.loss % 1 ? lat.loss.toFixed(1) : lat.loss) + ' %';
           $('ping-val').textContent = Math.round(lat.ping) + ' ms';
           $('jitter-val').textContent = (lat.jitter < 10 ? lat.jitter.toFixed(1) : Math.round(lat.jitter)) + ' ms';
         }
@@ -455,14 +525,16 @@
       // 2. Download
       if (!run.aborted) {
         setStatus('Testing download speed…', 'info');
-        showLive(0);
+        showLive(0, true);
         try {
-          var d = await runDownload(profile, run);
+          var lpD = loadedPing(run, results.src), d;
+          try { d = await runDownload(profile, run); }
+          finally { results.dlPing = await lpD.finish(); if (results.dlPing != null) $('dl-ping-val').textContent = Math.round(results.dlPing) + ' ms'; }
           results.bytes += d.bytes;
           if (!d.aborted) {
             results.down = d.mbps;
             $('down-val').textContent = speedLabel(d.mbps);
-            showLive(d.mbps);
+            showLive(d.mbps, true);
           }
         } catch (e) {
           if (!run.aborted) { errors.push('download'); $('down-val').textContent = 'Failed'; }
@@ -472,49 +544,71 @@
       // 3. Upload
       if (!run.aborted) {
         setStatus('Testing upload speed…', 'info');
-        showLive(0);
+        showLive(0, true);
         await sleep(400);
         try {
-          var u = await runUpload(profile, run);
+          var lpU = loadedPing(run, results.src), u;
+          try { u = await runUpload(profile, run); }
+          finally { results.ulPing = await lpU.finish(); if (results.ulPing != null) $('ul-ping-val').textContent = Math.round(results.ulPing) + ' ms'; }
           results.bytes += u.bytes;
           if (!u.aborted) {
             results.up = u.mbps;
             $('up-val').textContent = speedLabel(u.mbps);
-            showLive(u.mbps);
+            showLive(u.mbps, true);
           }
         } catch (e) {
           if (!run.aborted) { errors.push('upload'); $('up-val').textContent = 'Failed'; }
         }
       }
 
+      if (results.ping != null) {
+        var deltas = [results.dlPing, results.ulPing].filter(function (x) { return x != null; })
+          .map(function (x) { return Math.max(0, x - results.ping); });
+        if (deltas.length) {
+          results.bloat = Math.max.apply(null, deltas);
+          $('bloat-val').textContent = bloatGrade(results.bloat) + ' (+' + Math.round(results.bloat) + ' ms)';
+        }
+      }
       if (results.bytes) $('data-used').textContent = 'Data used: ' + formatBytes(results.bytes);
 
       if (run.aborted) {
-        setStatus('Test stopped', 'error');
+        setStatus(run.offline ? 'Connection lost during the test' : 'Test stopped', 'error');
       } else if (errors.length === 3) {
         setStatus('Could not reach the test servers. Check your connection, VPN or ad-blocker.', 'error');
       } else if (errors.length) {
         setStatus('Finished with errors (' + errors.join(', ') + ' failed)', 'error');
       } else {
-        setStatus('Test complete', 'ok');
+        setStatus(run.hidden ? 'Done, but the tab was in the background. Retest for an accurate result.' : 'Test complete', run.hidden ? 'info' : 'ok');
       }
-      if (!run.aborted && (results.down !== null || results.up !== null)) shareBtn.classList.remove('hidden');
+      if (!run.aborted && (results.down !== null || results.up !== null)) {
+        last = results;
+        renderInsights(results);
+        if (!run.hidden) saveHistory({ t: Date.now(), d: results.down, u: results.up, p: results.ping, j: results.jitter, l: results.loss, b: results.bloat });
+        shareBtn.classList.remove('hidden');
+      }
     } finally {
       currentRun = null;
+      unlockScreen();
       btn.textContent = 'RETEST';
     }
   }
 
   async function copyResults() {
+    var r = last || {};
     var text = [
       '🚀 My Internet Speed Test Result:',
       '',
       '⬇️ Download: ' + $('down-val').textContent,
       '⬆️ Upload: ' + $('up-val').textContent,
-      '📡 Ping: ' + $('ping-val').textContent + ' (jitter ' + $('jitter-val').textContent + ')',
+      '📡 Ping: ' + $('ping-val').textContent + ' (jitter ' + $('jitter-val').textContent + ', loss ' + $('loss-val').textContent + ')',
+      r.bloat != null ? '📶 Bufferbloat: ' + $('bloat-val').textContent : '',
       '',
       'Tested on Fast Mode - ' + location.origin
-    ].join('\n');
+    ].filter(function (l, i, a) { return l !== '' || a[i - 1] !== ''; }).join('\n');
+    if (navigator.share) {
+      try { await navigator.share({ title: 'My internet speed', text: text }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
     var ok = await handleCopy(text);
     showToast(ok ? 'Results copied to clipboard' : 'Could not copy automatically');
   }
@@ -750,21 +844,126 @@
       }
       return { p: p, r: r };
     }));
+    function dnsScore(r) { return r.uncached != null ? 0.4 * r.cached + 0.6 * r.uncached : r.cached; }
 
     var ranked = results.filter(function (x) { return !x.r.error && !x.r.approx; })
-      .sort(function (a, b) { return a.r.cached - b.r.cached; });
+      .sort(function (a, b) { return dnsScore(a.r) - dnsScore(b.r); });
     var rest = results.filter(function (x) { return ranked.indexOf(x) === -1; });
     ranked.concat(rest).forEach(function (x, i) { $(cardId(x.p)).style.order = String(i); });
 
     if (ranked.length) {
       $(cardId(ranked[0].p)).querySelector('.dns-badge').classList.remove('hidden');
-      summary.textContent = 'Fastest right now: ' + ranked[0].p.name + ' (' + Math.round(ranked[0].r.cached) + ' ms cached).';
+      var w = ranked[0].r;
+      summary.textContent = 'Fastest overall: ' + ranked[0].p.name + ' (' + Math.round(w.cached) + ' ms cached' + (w.uncached != null ? ', ' + Math.round(w.uncached) + ' ms uncached' : '') + ').';
     } else {
       summary.textContent = 'No provider could be measured. Your network, VPN or browser may be blocking DNS-over-HTTPS.';
     }
 
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> Run DNS Test';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Extras: unit toggle, insights, history, connection info, wake lock
+   * ------------------------------------------------------------------ */
+  var unitMode = 'mbps', last = null, HKEY = 'fastmode.history.v1', wake = null;
+  try { unitMode = localStorage.getItem('fastmode.unit') === 'MBps' ? 'MBps' : 'mbps'; } catch (_) { /* storage blocked */ }
+
+  function bloatGrade(ms) { return ms < 30 ? 'A' : ms < 60 ? 'B' : ms < 120 ? 'C' : ms < 200 ? 'D' : 'F'; }
+
+  async function lockScreen() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (_) { /* optional */ } }
+  function unlockScreen() { try { if (wake) { wake.release(); wake = null; } } catch (_) { /* optional */ } }
+
+  function renderUnits() {
+    var b = $('unit-btn');
+    if (b) b.textContent = unitMode === 'MBps' ? 'Show Mbps' : 'Show MB/s';
+    if (last) {
+      if (last.down != null) $('down-val').textContent = speedLabel(last.down);
+      if (last.up != null) $('up-val').textContent = speedLabel(last.up);
+      var f = formatSpeed(last.up != null ? last.up : last.down);
+      $('current-speed').textContent = f.value;
+      $('speed-unit').textContent = f.unit;
+    } else if (!currentRun) {
+      $('speed-unit').textContent = unitMode === 'MBps' ? 'MB/s' : 'Mbps';
+    }
+    renderHistory();
+  }
+
+  function renderInsights(r) {
+    var el = $('insights');
+    if (!el) return;
+    var d = r.down, u = r.up, p = r.ping, j = r.jitter, l = r.loss || 0, b = r.bloat;
+    function lvl(good, ok) { return good ? 'good' : ok ? 'ok' : 'poor'; }
+    var items = [];
+    if (d != null) {
+      items.push({ i: 'fa-globe', n: 'Browsing & HD video', l: lvl(d >= 25, d >= 5) });
+      items.push({ i: 'fa-tv', n: '4K streaming', l: lvl(d >= 25, d >= 15) });
+    }
+    if (d != null && u != null && p != null && j != null) {
+      items.push({ i: 'fa-video', n: 'Video calls', l: lvl(d >= 10 && u >= 5 && p < 100 && j < 30 && l < 1, d >= 3 && u >= 1.5 && p < 200) });
+    }
+    if (p != null && j != null) {
+      items.push({ i: 'fa-gamepad', n: 'Online gaming', l: lvl(p < 40 && j < 15 && l < 0.5 && (b == null || b < 60), p < 80 && j < 30 && l < 2) });
+    }
+    var T = { good: ['emerald', 'Great'], ok: ['amber', 'Okay'], poor: ['rose', 'Poor'] };
+    el.innerHTML = items.map(function (x) {
+      var c = T[x.l][0];
+      return '<div class="rounded-xl border border-' + c + '-500/30 bg-' + c + '-500/10 p-3 text-center">' +
+        '<i class="fas ' + x.i + ' text-' + c + '-400 mb-1" aria-hidden="true"></i>' +
+        '<div class="text-xs text-slate-300">' + x.n + '</div>' +
+        '<div class="text-xs font-bold text-' + c + '-300">' + T[x.l][1] + '</div></div>';
+    }).join('');
+  }
+
+  function loadHistory() { try { var h = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(h) ? h : []; } catch (_) { return []; } }
+  function saveHistory(e) {
+    var h = loadHistory(); h.unshift(e); h = h.slice(0, 25);
+    try { localStorage.setItem(HKEY, JSON.stringify(h)); } catch (_) { /* storage blocked */ }
+    renderHistory();
+  }
+  function num(x, f) { return x == null || !isFinite(x) ? '-' : Number(x).toFixed(f || 0); }
+  function renderHistory() {
+    var body = $('history-body');
+    if (!body) return;
+    var h = loadHistory();
+    $('history-empty').classList.toggle('hidden', h.length > 0);
+    $('history-wrap').classList.toggle('hidden', h.length === 0);
+    body.innerHTML = h.map(function (e) {
+      return '<tr class="border-t border-slate-800"><td class="px-3 py-2 text-slate-400">' + new Date(+e.t).toLocaleString() + '</td>' +
+        '<td class="px-3 py-2 text-emerald-400 font-semibold">' + (e.d == null ? '-' : speedLabel(+e.d)) + '</td>' +
+        '<td class="px-3 py-2 text-purple-400 font-semibold">' + (e.u == null ? '-' : speedLabel(+e.u)) + '</td>' +
+        '<td class="px-3 py-2">' + num(e.p) + ' ms</td><td class="px-3 py-2">' + num(e.j, 1) + ' ms</td>' +
+        '<td class="px-3 py-2">' + (e.b == null ? '-' : bloatGrade(+e.b)) + '</td></tr>';
+    }).join('');
+  }
+  function exportHistory() {
+    var h = loadHistory();
+    if (!h.length) { showToast('Nothing to export yet'); return; }
+    var csv = 'time,download_mbps,upload_mbps,ping_ms,jitter_ms,loss_pct,bufferbloat_ms\n' + h.map(function (e) {
+      return [new Date(+e.t).toISOString(), num(e.d, 2), num(e.u, 2), num(e.p, 1), num(e.j, 1), num(e.l, 1), num(e.b, 0)].join(',');
+    }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'fastmode-history.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  function connInfo() {
+    var el = $('conn-info');
+    var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!el) return;
+    if (!c) { el.textContent = navigator.onLine === false ? 'Offline' : 'Online (details not reported by this browser)'; return; }
+    var parts = [];
+    if (c.type) parts.push(c.type);
+    if (c.effectiveType) parts.push(c.effectiveType.toUpperCase());
+    if (c.downlink) parts.push('~' + c.downlink + ' Mbps browser estimate');
+    if (c.saveData) parts.push('Data Saver on');
+    el.textContent = parts.join(' · ') || 'Online';
+    var slow = c.saveData || c.type === 'cellular' || /^(slow-2g|2g|3g)$/.test(c.effectiveType || '');
+    var lm = $('light-mode');
+    if (slow && lm && !lm.checked && !connInfo.done) { lm.checked = true; showToast('Light mode turned on for your connection'); }
+    connInfo.done = true;
   }
 
   /* ------------------------------------------------------------------ *
@@ -789,6 +988,27 @@
     $('share-btn').addEventListener('click', copyResults);
     $('copy-ip-btn').addEventListener('click', copyIP);
     $('dns-btn').addEventListener('click', runDNSTest);
+    var ub = $('unit-btn');
+    if (ub) ub.addEventListener('click', function () {
+      unitMode = unitMode === 'MBps' ? 'mbps' : 'MBps';
+      try { localStorage.setItem('fastmode.unit', unitMode); } catch (_) { /* ignore */ }
+      renderUnits();
+    });
+    $('history-export').addEventListener('click', exportHistory);
+    $('history-clear').addEventListener('click', function () {
+      try { localStorage.removeItem(HKEY); } catch (_) { /* ignore */ }
+      renderHistory(); showToast('History cleared');
+    });
+    document.addEventListener('visibilitychange', function () { if (document.hidden && currentRun) currentRun.hidden = true; });
+    window.addEventListener('offline', function () {
+      if (!currentRun) return;
+      currentRun.offline = true; currentRun.aborted = true;
+      currentRun.aborters.forEach(function (a) { try { a.abort(); } catch (_) {} });
+    });
+    var nc = navigator.connection;
+    if (nc && nc.addEventListener) nc.addEventListener('change', connInfo);
+    connInfo();
+    renderUnits();
     fetchIPInfo();
   }
 
@@ -798,7 +1018,7 @@
   window.copyIP = copyIP;
   window.copyResults = copyResults;
   window.copyText = copyText;
-  window.FastMode = { Meter: Meter, median: median, jitter: jitter, formatSpeed: formatSpeed, buildDnsQuery: buildDnsQuery, b64url: b64url, config: CFG };
+  window.FastMode = { bloatGrade: bloatGrade, Meter: Meter, median: median, jitter: jitter, formatSpeed: formatSpeed, buildDnsQuery: buildDnsQuery, b64url: b64url, config: CFG };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

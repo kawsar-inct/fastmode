@@ -18,7 +18,13 @@ Measure your internet connection in real time with accurate performance metrics.
 * Upload test: parallel streams with real upload progress
 * Ping: median of repeated requests on a warm connection
 * Jitter: mean change between consecutive ping samples
-* Light mode for metered connections; data used is shown after each test
+* Light mode for metered connections (switched on automatically when Data Saver or a slow/cellular link is detected); data used is shown after each test
+* Adaptive parallel streams: more connections are added automatically on very fast lines
+* Loaded latency (bufferbloat grade A-F) measured during download and upload
+* Packet loss estimate from timed-out probes
+* "What can I do with this?" ratings for browsing, 4K, video calls and gaming
+* Mbps / MB/s toggle, native share sheet, screen wake-lock during tests
+* Local test history (last 25 results) with CSV export
 * Real-time Progress Indicators
 * Mobile & Desktop Compatible
 
